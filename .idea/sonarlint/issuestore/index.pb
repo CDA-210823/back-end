@@ -4,7 +4,14 @@
 .gitignore,a/5/a5cc2925ca8258af241be7e5b0381edf30266302
 9
 	README.md,8/e/8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
-I
-src/Controller/.gitignore,c/5/c53475441e089241bc9fda0bb9b728a6f72f0dd2
 4
 .env,3/c/3c84dcdc6bbe3d7817c49dcdc327b926fea1808a
+:
+
+.env.local,1/f/1fa30fea3e9ae270a3c38a6113a3689d8987d108
+G
+src/Entity/Category.php,c/8/c85245800948ffb0569f65af912d0e2d467f18f3
+F
+src/Entity/Command.php,c/1/c18df1df5be72cf426e17e904e9e3428a51d1f79
+C
+src/Entity/User.php,0/a/0a3e99b9da178509aeb5b3fa6f5dce46bc0eb8be
