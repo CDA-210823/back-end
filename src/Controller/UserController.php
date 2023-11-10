@@ -25,18 +25,18 @@ class UserController extends AbstractController
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
      */
-    public function __construct(UserRepository $userRepository, SerializerInterface $serializer)
+    public function __construct(UserRepository $userRepository, SerializerInterface $serializer, EntityManagerInterface $em)
     {
         $this->userRepository = $userRepository;
         $this->serializer = $serializer;
+        $this->em = $em;
     }
-
 
     #[Route('/', name: 'app_user', methods: ['GET'])]
     public function getAll(): JsonResponse
     {
         $userList = $this->userRepository->findAll();
-        $jsonUserList = $this->serializer->serialize($userList, 'json', ['groups'=>'getUser']);
+        $jsonUserList = $this->serializer->serialize($userList, 'json', ['groups' => 'getUser']);
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
@@ -46,45 +46,54 @@ class UserController extends AbstractController
     {
         $user = $this->userRepository->find($id);
         if ($user) {
-            $jsonUser = $this->serializer->serialize($user, 'json', ['groups'=>'getUser']);
+            $jsonUser = $this->serializer->serialize($user, 'json', ['groups' => 'getUser']);
 
             return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
         }
-        return new JsonResponse(['message'=>'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        return new JsonResponse(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
 
-    #[Route('/new', name:'app_user_add', methods:['POST'])]
+    #[Route('/new', name: 'app_user_add', methods: ['POST'])]
     public function addUser
     (Request $request,
      UserPasswordHasherInterface $passwordHasher
     ): JsonResponse
     {
-        $user = $this->serializer->deserialize($request->getContent(),User::class, 'json');
+        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
 
         $this->em->persist($user);
         $this->em->flush();
 
         return new JsonResponse
-        ($this->serializer->serialize($user, 'json', ['groups'=>'getUser']), Response::HTTP_CREATED, [], true);
+        (
+            $this->serializer->serialize($user,
+            'json', ['groups' => 'getUser']),
+            Response::HTTP_CREATED,
+            [],
+            true);
     }
 
-    #[Route('/{id}', name: 'app_user_edit',methods: ['PUT'])]
+    #[Route('/{id}', name: 'app_user_edit', methods: ['PUT'])]
     public function editUser
     (Request $request,
-     User $currentUser
-    ):JsonResponse
+     User    $currentUser
+    ): JsonResponse
     {
         $editUser = $this->serializer->deserialize
-        ($request->getContent(), User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE=>$currentUser]);
+        (
+            $request->getContent(),
+            User::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
 
         $this->em->persist($editUser);
         $this->em->flush();
 
-        return new JsonResponse(['message'=>'Utilisateur mis à jour'], Response::HTTP_OK);
+        return new JsonResponse(['message' => 'Utilisateur mis à jour'], Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'app_user_delete',methods: ['DELETE'])]
+    #[Route('/{id}', name: 'app_user_delete', methods: ['DELETE'])]
     public function deleteUser(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
@@ -94,6 +103,6 @@ class UserController extends AbstractController
 
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
-        return new JsonResponse(['message'=>'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        return new JsonResponse(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
 }
