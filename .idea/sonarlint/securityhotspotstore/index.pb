@@ -15,3 +15,5 @@ F
 src/Entity/Command.php,c/1/c18df1df5be72cf426e17e904e9e3428a51d1f79
 C
 src/Entity/User.php,0/a/0a3e99b9da178509aeb5b3fa6f5dce46bc0eb8be
+F
+src/Entity/Product.php,4/3/43672f36815a1d5d48e2d6884176d0a297fbd86d
