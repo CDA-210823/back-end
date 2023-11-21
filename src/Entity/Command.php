@@ -31,6 +31,9 @@ class Command
     #[ORM\OneToMany(mappedBy: 'command', targetEntity: CommandProduct::class)]
     private Collection $commandProducts;
 
+    #[ORM\ManyToOne(inversedBy: 'command')]
+    private ?User $user = null;
+
     public function __construct()
     {
         $this->commandProducts = new ArrayCollection();
@@ -115,6 +118,18 @@ class Command
                 $commandProduct->setCommand(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

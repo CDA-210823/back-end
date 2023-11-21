@@ -18,6 +18,9 @@ class Cart
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'carts')]
     private Collection $product;
 
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?User $user = null;
+
     public function __construct()
     {
         $this->product = new ArrayCollection();
@@ -48,6 +51,18 @@ class Cart
     public function removeProduct(Product $product): static
     {
         $this->product->removeElement($product);
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

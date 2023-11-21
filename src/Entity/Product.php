@@ -40,10 +40,17 @@ class Product
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
     private Collection $commandProducts;
 
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Image::class)]
+    private Collection $imageProduct;
+
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    private ?Category $category = null;
+
     public function __construct()
     {
         $this->carts = new ArrayCollection();
         $this->commandProducts = new ArrayCollection();
+        $this->imageProduct = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -152,6 +159,48 @@ class Product
                 $commandProduct->setProduct(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Image>
+     */
+    public function getImageProduct(): Collection
+    {
+        return $this->imageProduct;
+    }
+
+    public function addImageProduct(Image $imageProduct): static
+    {
+        if (!$this->imageProduct->contains($imageProduct)) {
+            $this->imageProduct->add($imageProduct);
+            $imageProduct->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImageProduct(Image $imageProduct): static
+    {
+        if ($this->imageProduct->removeElement($imageProduct)) {
+            // set the owning side to null (unless already changed)
+            if ($imageProduct->getProduct() === $this) {
+                $imageProduct->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
 
         return $this;
     }
