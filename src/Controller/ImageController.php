@@ -64,6 +64,7 @@ class ImageController extends AbstractController
     (Image $image, Request $request, SluggerInterface $slugger, ParameterBagInterface $parameterBag): JsonResponse
     {
         if ($image){
+            $parameterBag->remove($image->getName());
             $file = $this->serializer->deserialize($request->getContent(), Image::class, 'json',
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $image]
             );
@@ -77,10 +78,11 @@ class ImageController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'app_image_delete', methods: ["DELETE"])]
-    public function delete(int $id): JsonResponse
+    public function delete(int $id, ParameterBagInterface $parameterBag): JsonResponse
     {
         $image = $this->imageRepository->find($id);
         if ($image){
+            $parameterBag->remove($image->getName());
             $this->imageRepository->remove($image, true);
             return new JsonResponse(['message' => "L'image' à bien été supprimé"], Response::HTTP_OK);
         }
