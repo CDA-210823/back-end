@@ -15,23 +15,23 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product', 'image'])]
+    #[Groups(['product', 'image', 'cart'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['product', 'image'])]
+    #[Groups(['product', 'image', 'cart'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['product', 'image'])]
+    #[Groups(['product', 'image', 'cart'])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['product', 'image'])]
+    #[Groups(['product', 'image', 'cart'])]
     private ?float $price = null;
 
     #[ORM\Column]
-    #[Groups(['product', 'image'])]
+    #[Groups(['product', 'image', 'cart'])]
     private ?int $stock = null;
 
     #[ORM\ManyToMany(targetEntity: Cart::class, mappedBy: 'product')]
@@ -41,9 +41,11 @@ class Product
     private Collection $commandProducts;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Image::class)]
+    #[Groups(['cart'])]
     private Collection $imageProduct;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[Groups(['cart'])]
     private ?Category $category = null;
 
     public function __construct()

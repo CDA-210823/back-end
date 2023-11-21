@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Cart;
 use App\Repository\CartRepository;
+use App\Repository\ProductRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
+#[Route('/api/cart')]
 class CartController extends AbstractController
 {
     private SerializerInterface $serializer;
@@ -44,18 +47,43 @@ class CartController extends AbstractController
     }
 
     #[Route('/new', name: 'app_cart_new', methods: ["POST"])]
-    public function new(Request $request): JsonResponse
+    public function new(Request $request, UserRepository $userRepository): JsonResponse
+    {
+        $user = $userRepository->find($this->getUser());
+        if (!$this->cartRepository->getCartByUser($user->getId())){
+            $cart = $this->serializer->deserialize($request->getContent(), Cart::class, 'json');
+            $cart->setUser($user);
+
+            $this->cartRepository->save($cart, true);
+
+            return new JsonResponse
+            ($this->serializer->serialize($cart, 'json', ['groups'=>'cart']), Response::HTTP_OK, [], true);
+        }
+
+        return new JsonResponse(['message' => 'u already have a cart'], Response::HTTP_BAD_REQUEST);
+
+    }
+
+
+
+
+    #[Route('/addProduct', name: 'app_cart_add_product_to_cart', methods: ['POST'])]
+    public function addProductToCart
+    (Request $request, ProductRepository $productRepository, UserRepository $userRepository): JsonResponse
     {
 
-
-        $cart = $this->serializer->deserialize($request->getContent(), Cart::class, 'json');
-        $cart->setUser($this->getUser());
-
-        $this->em->persist($cart);
-        $this->em->flush();
-
+        $content = $request->toArray();
+        $product = $productRepository->find($content['idProduct']);
+        $cart = $this->cartRepository->find($content['idCart']);
+        if ($cart && $cart->getUser() === $this->getUser() && $product){
+            $cart->addProduct($product);
+            return new JsonResponse(['message' => 'Produit ajouter au panier avec succès'], Response::HTTP_OK);
+        }
         return new JsonResponse
-        ($this->serializer->serialize($cart, 'json', ['groups'=>'cart']), Response::HTTP_OK, [], true);
+        (
+            ['message' => "Le produit que vous souhaiter ajouter n'existe plus ou n'est plus disponible"],
+            Response::HTTP_OK
+        );
     }
 
     #[Route('/edit/{id}', name: 'app_cart_edit', methods: ["PUT"])]
