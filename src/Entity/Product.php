@@ -34,9 +34,6 @@ class Product
     #[Groups(['product', 'image', 'cart'])]
     private ?int $stock = null;
 
-    #[ORM\ManyToMany(targetEntity: Cart::class, mappedBy: 'product')]
-    private Collection $carts;
-
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
     private Collection $commandProducts;
 
@@ -48,11 +45,15 @@ class Product
     #[Groups(['cart'])]
     private ?Category $category = null;
 
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartProduct::class)]
+    private Collection $cartProducts;
+
     public function __construct()
     {
         $this->carts = new ArrayCollection();
         $this->commandProducts = new ArrayCollection();
         $this->imageProduct = new ArrayCollection();
+        $this->cartProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -104,33 +105,6 @@ class Product
     public function setStock(int $stock): static
     {
         $this->stock = $stock;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Cart>
-     */
-    public function getCarts(): Collection
-    {
-        return $this->carts;
-    }
-
-    public function addCart(Cart $cart): static
-    {
-        if (!$this->carts->contains($cart)) {
-            $this->carts->add($cart);
-            $cart->addProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCart(Cart $cart): static
-    {
-        if ($this->carts->removeElement($cart)) {
-            $cart->removeProduct($this);
-        }
 
         return $this;
     }
@@ -203,6 +177,36 @@ class Product
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CartProduct>
+     */
+    public function getCartProducts(): Collection
+    {
+        return $this->cartProducts;
+    }
+
+    public function addCartProduct(CartProduct $cartProduct): static
+    {
+        if (!$this->cartProducts->contains($cartProduct)) {
+            $this->cartProducts->add($cartProduct);
+            $cartProduct->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCartProduct(CartProduct $cartProduct): static
+    {
+        if ($this->cartProducts->removeElement($cartProduct)) {
+            // set the owning side to null (unless already changed)
+            if ($cartProduct->getProduct() === $this) {
+                $cartProduct->setProduct(null);
+            }
+        }
 
         return $this;
     }
