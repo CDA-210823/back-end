@@ -4837,11 +4837,7 @@
             "description": "Handles serializing and deserializing data structures, including object graphs, into array structures or other formats like XML and JSON.",
             "homepage": "https://symfony.com",
             "support": {
-<<<<<<< HEAD
-                "source": "https://github.com/symfony/serializer/tree/v6.3.7"
-=======
                 "source": "https://github.com/symfony/serializer/tree/v6.3.8"
->>>>>>> Sam
             },
             "funding": [
                 {
@@ -4857,11 +4853,7 @@
                     "type": "tidelift"
                 }
             ],
-<<<<<<< HEAD
-            "time": "2023-10-26T18:15:14+00:00"
-=======
             "time": "2023-11-07T10:11:25+00:00"
->>>>>>> Sam
         },
         {
             "name": "symfony/service-contracts",
