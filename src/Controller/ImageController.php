@@ -6,13 +6,16 @@ use App\Entity\Image;
 use App\Repository\ImageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
+#[Route('/api/image')]
 class ImageController extends AbstractController
 {
     private SerializerInterface $serializer;
@@ -32,7 +35,7 @@ class ImageController extends AbstractController
         $this->em = $em;
     }
 
-    #[Route('/', name: 'app_image_all')]
+    #[Route('/', name: 'app_image_all', methods: ['GET'])]
     public function getAll(): JsonResponse
     {
 
@@ -43,19 +46,18 @@ class ImageController extends AbstractController
         );
     }
 
-    #[Route('/new', name: 'app_image_new', methods: ["POST"])]
-    public function new(Request $request): JsonResponse
+    #[Route('/add', name: 'app_image_new', methods: ["POST"])]
+    public function add(Request $request, SluggerInterface $slugger, ParameterBagInterface $parameterBag): JsonResponse
     {
+        $file = $this->serializer->deserialize($request->getContent(), Image::class, 'json');
+        $file->setOwner($this->getUser());
 
+        $content = $request->toArray();
+        $this->uploadImage($content['file'], $slugger, $file, $parameterBag);
 
-        $image = $this->serializer->deserialize($request->getContent(), Image::class, 'json');
-
-        $this->em->persist($image);
-        $this->em->flush();
-
-        return new JsonResponse
-        ($this->serializer->serialize($image, 'json', ['groups'=>'image']), Response::HTTP_OK, [], true);
+        return new JsonResponse(['message' => 'Image added to DB'], Response::HTTP_CREATED);
     }
+
 
     #[Route('/edit/{id}', name: 'app_image_edit', methods: ["PUT"])]
     public function edit(Request $request, Image $image = null): JsonResponse
@@ -67,8 +69,7 @@ class ImageController extends AbstractController
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $image]
             );
 
-            $this->em->persist($updatedImage);
-            $this->em->flush();
+            $this->imageRepository->save($updatedImage, true);
             return new JsonResponse(['message' => 'sucessful edited'],Response::HTTP_OK);
         }
         return new JsonResponse(['message' => 'Error image not found'], Response::HTTP_NOT_FOUND);
@@ -79,15 +80,12 @@ class ImageController extends AbstractController
     {
         $image = $this->imageRepository->find($id);
         if ($image){
-            $this->em->remove($image);
-            $this->em->flush();
-
+            $this->imageRepository->remove($image, true);
             return new JsonResponse(['message' => "L'image' à bien été supprimé"], Response::HTTP_OK);
         }
-        else {
-            return new JsonResponse
-            (['message' => "L'image' n'existe pas ou à déjà été supprimé"],Response::HTTP_BAD_REQUEST);
-        }
+
+        return new JsonResponse
+        (['message' => "L'image' n'existe pas ou à déjà été supprimé"],Response::HTTP_BAD_REQUEST);
     }
 
     #[Route('/show/{id}', name: 'app_image_show', methods: ['GET'])]
@@ -100,5 +98,35 @@ class ImageController extends AbstractController
         }
 
         return new JsonResponse(["message" => "Image not found"], Response::HTTP_NOT_FOUND, []);
+    }
+
+
+    public function uploadImage
+    (
+        $imageName,
+        SluggerInterface $slugger,
+        Image $imageEntity,
+        ParameterBagInterface $container
+    )
+    : void
+    {
+        $file = $imageName->getData();
+
+        if ($file) {
+            $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFileName = $slugger->slug($originalFileName);
+            $ext = $file->guessExtension();
+            $newFileName = $safeFileName . '-' . uniqid() . $ext;
+            $imageEntity->setName($newFileName);
+            $imageEntity->setPath('/upload');
+
+
+            if (!$ext) {
+                $ext = 'bin';
+            }
+
+            $file->move($container->get('upload.directory'), $newFileName . '.' . $ext);
+            $this->imageRepository->save($imageEntity, true);
+        }
     }
 }
