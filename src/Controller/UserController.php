@@ -77,7 +77,8 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'app_user_edit', methods: ['PUT'])]
     public function editUser
     (Request $request,
-     User    $currentUser
+     User    $currentUser,
+    UserPasswordHasherInterface $passwordHasher
     ): JsonResponse
     {
         $editUser = $this->serializer->deserialize
@@ -86,6 +87,7 @@ class UserController extends AbstractController
             User::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
+        $editUser->setPassword($passwordHasher->hashPassword($currentUser, $currentUser->getPassword()));
 
         $this->em->persist($editUser);
         $this->em->flush();
