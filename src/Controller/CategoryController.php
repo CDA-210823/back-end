@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Category;
+use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,16 +16,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 class CategoryController extends AbstractController
 {
     private $entityManager;
+    private $categoryRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, CategoryRepository $categoryRepository)
     {
         $this->entityManager = $entityManager;
+        $this->categoryRepository = $categoryRepository;
     }
 
     #[Route('/', name: "api_category_index", methods: ['GET'])]
     public function getAllCategory(SerializerInterface $serializer): JsonResponse
     {
-        $categories = $this->entityManager->getRepository(Category::class)->findAll();
+        $categories = $this->categoryRepository->findAll();
         $jsonContent = $serializer->serialize($categories, 'json');
 
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
@@ -57,11 +60,13 @@ class CategoryController extends AbstractController
     {
         $data = $request->getContent();
         $updatedCategory = $serializer->deserialize($data, Category::class, 'json');
-
         $category->setName($updatedCategory->getName());
 
-        $this->entityManager->flush();
+        foreach ($updatedCategory->getProducts() as $updatedProduct) {
+            $category->addProduct($updatedProduct);
+        }
 
+        $this->entityManager->flush();
         $jsonContent = $serializer->serialize($category, 'json');
 
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
