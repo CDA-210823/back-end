@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -32,6 +34,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?bool $bannite = null;
+
+    #[ORM\ManyToMany(targetEntity: Address::class, inversedBy: 'users')]
+    private Collection $address;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Command::class)]
+    private Collection $command;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Opinion::class)]
+    private Collection $opinion;
+
+    public function __construct()
+    {
+        $this->address = new ArrayCollection();
+        $this->command = new ArrayCollection();
+        $this->opinion = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -111,6 +129,90 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setBannite(?bool $bannite): static
     {
         $this->bannite = $bannite;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Address>
+     */
+    public function getAddress(): Collection
+    {
+        return $this->address;
+    }
+
+    public function addAddress(Address $address): static
+    {
+        if (!$this->address->contains($address)) {
+            $this->address->add($address);
+        }
+
+        return $this;
+    }
+
+    public function removeAddress(Address $address): static
+    {
+        $this->address->removeElement($address);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Command>
+     */
+    public function getCommand(): Collection
+    {
+        return $this->command;
+    }
+
+    public function addCommand(Command $command): static
+    {
+        if (!$this->command->contains($command)) {
+            $this->command->add($command);
+            $command->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommand(Command $command): static
+    {
+        if ($this->command->removeElement($command)) {
+            // set the owning side to null (unless already changed)
+            if ($command->getUser() === $this) {
+                $command->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Opinion>
+     */
+    public function getOpinion(): Collection
+    {
+        return $this->opinion;
+    }
+
+    public function addOpinion(Opinion $opinion): static
+    {
+        if (!$this->opinion->contains($opinion)) {
+            $this->opinion->add($opinion);
+            $opinion->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOpinion(Opinion $opinion): static
+    {
+        if ($this->opinion->removeElement($opinion)) {
+            // set the owning side to null (unless already changed)
+            if ($opinion->getUser() === $this) {
+                $opinion->setUser(null);
+            }
+        }
 
         return $this;
     }
