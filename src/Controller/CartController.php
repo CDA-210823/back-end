@@ -51,7 +51,7 @@ class CartController extends AbstractController
     {
         $user = $userRepository->find($this->getUser());
         if (!$this->cartRepository->getCartByUser($user->getId())){
-            $cart = $this->serializer->deserialize($request->getContent(), Cart::class, 'json');
+            $cart = new Cart();
             $cart->setUser($user);
 
             $this->cartRepository->save($cart, true);
@@ -64,12 +64,9 @@ class CartController extends AbstractController
 
     }
 
-
-
-
     #[Route('/addProduct', name: 'app_cart_add_product_to_cart', methods: ['POST'])]
     public function addProductToCart
-    (Request $request, ProductRepository $productRepository, UserRepository $userRepository): JsonResponse
+    (Request $request, ProductRepository $productRepository): JsonResponse
     {
 
         $content = $request->toArray();
@@ -77,6 +74,7 @@ class CartController extends AbstractController
         $cart = $this->cartRepository->find($content['idCart']);
         if ($cart && $cart->getUser() === $this->getUser() && $product){
             $cart->addProduct($product);
+            $this->cartRepository->save($cart, true);
             return new JsonResponse(['message' => 'Produit ajouter au panier avec succès'], Response::HTTP_OK);
         }
         return new JsonResponse
