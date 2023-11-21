@@ -16,12 +16,21 @@ class Image
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+
     #[ORM\ManyToOne(inversedBy: 'imageProduct')]
     private ?Product $product = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $path = null;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getName(): ?string
@@ -29,11 +38,9 @@ class Image
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getProduct(): ?Product
@@ -41,10 +48,19 @@ class Image
         return $this->product;
     }
 
-    public function setProduct(?Product $product): static
+    public function setProduct(?Product $product): void
     {
         $this->product = $product;
-
-        return $this;
     }
+
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    public function setPath(?string $path): void
+    {
+        $this->path = $path;
+    }
+
 }
