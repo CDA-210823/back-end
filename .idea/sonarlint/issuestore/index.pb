@@ -17,3 +17,11 @@ C
 src/Entity/User.php,0/a/0a3e99b9da178509aeb5b3fa6f5dce46bc0eb8be
 F
 src/Entity/Product.php,4/3/43672f36815a1d5d48e2d6884176d0a297fbd86d
+T
+$src/Controller/ProductController.php,6/5/65b02b46f8d51efa74789e695aa9505440bd7425
+=
+composer.json,3/9/3957b91a0d8450cea0115cfd5af69eac90d75897
+=
+composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd
+Q
+!src/Controller/UserController.php,8/7/87b99206717ccce222f05190f36b6273e3ea6228
