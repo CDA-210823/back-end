@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6163bad1ff8c429943bf2ec2e9ba5f6d",
+    "content-hash": "4af33547ef4c5571e50d3af42a8f643a",
     "packages": [
         {
             "name": "doctrine/cache",
@@ -4750,6 +4750,7 @@
         },
         {
             "name": "symfony/serializer",
+<<<<<<< HEAD
             "version": "v6.3.7",
             "source": {
                 "type": "git",
@@ -4760,6 +4761,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/symfony/serializer/zipball/641472dd3d6dc3c4d0fdd1496ebd1b55c72e43d9",
                 "reference": "641472dd3d6dc3c4d0fdd1496ebd1b55c72e43d9",
+=======
+            "version": "v6.3.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/serializer.git",
+                "reference": "b3ad1515a276473f7919ac97e560017284a7c4bf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/serializer/zipball/b3ad1515a276473f7919ac97e560017284a7c4bf",
+                "reference": "b3ad1515a276473f7919ac97e560017284a7c4bf",
+>>>>>>> Sam
                 "shasum": ""
             },
             "require": {
@@ -4824,7 +4837,11 @@
             "description": "Handles serializing and deserializing data structures, including object graphs, into array structures or other formats like XML and JSON.",
             "homepage": "https://symfony.com",
             "support": {
+<<<<<<< HEAD
                 "source": "https://github.com/symfony/serializer/tree/v6.3.7"
+=======
+                "source": "https://github.com/symfony/serializer/tree/v6.3.8"
+>>>>>>> Sam
             },
             "funding": [
                 {
@@ -4840,7 +4857,11 @@
                     "type": "tidelift"
                 }
             ],
+<<<<<<< HEAD
             "time": "2023-10-26T18:15:14+00:00"
+=======
+            "time": "2023-11-07T10:11:25+00:00"
+>>>>>>> Sam
         },
         {
             "name": "symfony/service-contracts",
