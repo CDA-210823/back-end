@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommandRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -25,6 +27,14 @@ class Command
 
     #[ORM\Column]
     private ?float $total_price = null;
+
+    #[ORM\OneToMany(mappedBy: 'command', targetEntity: CommandProduct::class)]
+    private Collection $commandProducts;
+
+    public function __construct()
+    {
+        $this->commandProducts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -75,6 +85,36 @@ class Command
     public function setTotalPrice(float $total_price): static
     {
         $this->total_price = $total_price;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommandProduct>
+     */
+    public function getCommandProducts(): Collection
+    {
+        return $this->commandProducts;
+    }
+
+    public function addCommandProduct(CommandProduct $commandProduct): static
+    {
+        if (!$this->commandProducts->contains($commandProduct)) {
+            $this->commandProducts->add($commandProduct);
+            $commandProduct->setCommand($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommandProduct(CommandProduct $commandProduct): static
+    {
+        if ($this->commandProducts->removeElement($commandProduct)) {
+            // set the owning side to null (unless already changed)
+            if ($commandProduct->getCommand() === $this) {
+                $commandProduct->setCommand(null);
+            }
+        }
 
         return $this;
     }
