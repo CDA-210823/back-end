@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Command;
+use App\Repository\CommandRepository;
 use App\Service\CommandService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,20 +16,21 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api/command')]
 class CommandController extends AbstractController
 {
-
     private $entityManager;
+    private $commandRepository;
     private $commandService;
 
-    public function __construct(EntityManagerInterface $entityManager, CommandService $commandService)
+    public function __construct(EntityManagerInterface $entityManager, CommandRepository $commandRepository, CommandService $commandService)
     {
         $this->entityManager = $entityManager;
+        $this->commandRepository = $commandRepository;
         $this->commandService = $commandService;
     }
 
     #[Route('/', name: "api_command_index", methods: ['GET'])]
     public function index(SerializerInterface $serializer): JsonResponse
     {
-        $commands = $this->entityManager->getRepository(Command::class)->findAll();
+        $commands = $this->commandRepository->findAll();
         $jsonContent = $serializer->serialize($commands, 'json');
 
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
@@ -48,9 +50,7 @@ class CommandController extends AbstractController
         $data = $request->getContent();
         $command = $serializer->deserialize($data, Command::class, 'json');
 
-
-        $command->setDate($this->commandService->getCurrentDate());
-        $command->setStatus($this->commandService->generateDefaultStatus());
+        $this->commandService->manageCommand($command);
 
         $this->entityManager->persist($command);
         $this->entityManager->flush();
@@ -66,18 +66,24 @@ class CommandController extends AbstractController
         $data = $request->getContent();
         $updatedCommand = $serializer->deserialize($data, Command::class, 'json');
 
-
         $command->setNumber($updatedCommand->getNumber());
+        if ($updatedCommand->getStatus() !== null) {
+            $command->setStatus($updatedCommand->getStatus());
+        }
+
         $command->setTotalPrice($updatedCommand->getTotalPrice());
-        $command->setDate($this->commandService->getCurrentDate());
-        $command->setStatus($this->commandService->generateDefaultStatus());
+        $command->getCommandProducts()->clear();
+        foreach ($updatedCommand->getCommandProducts() as $updatedCommandProduct) {
+            $command->addCommandProduct($updatedCommandProduct);
+        }
 
         $this->entityManager->flush();
-
         $jsonContent = $serializer->serialize($command, 'json');
 
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
     }
+
+
 
     #[Route('/delete/{id}', name: "api_command_delete", methods: ['DELETE'])]
     public function delete(Command $command): JsonResponse
