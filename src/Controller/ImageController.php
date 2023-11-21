@@ -60,19 +60,20 @@ class ImageController extends AbstractController
 
 
     #[Route('/edit/{id}', name: 'app_image_edit', methods: ["PUT"])]
-    public function edit(Request $request, Image $image = null): JsonResponse
+    public function edit
+    (Image $image, Request $request, SluggerInterface $slugger, ParameterBagInterface $parameterBag): JsonResponse
     {
-        if ($image instanceof Image) {
-            $updatedImage = $this->serializer->deserialize($request->getContent(),
-                Image::class,
-                'json',
+        if ($image){
+            $file = $this->serializer->deserialize($request->getContent(), Image::class, 'json',
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $image]
             );
 
-            $this->imageRepository->save($updatedImage, true);
-            return new JsonResponse(['message' => 'sucessful edited'],Response::HTTP_OK);
+            $content = $request->toArray();
+            $this->uploadImage($content['file'], $slugger, $file, $parameterBag);
+
+            return new JsonResponse(['message' => "L'image à bien été modifié"], Response::HTTP_OK);
         }
-        return new JsonResponse(['message' => 'Error image not found'], Response::HTTP_NOT_FOUND);
+        return new JsonResponse(['message' => "L'image n'a pas été trouvé ou n'existe plus"], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/delete/{id}', name: 'app_image_delete', methods: ["DELETE"])]
@@ -118,7 +119,7 @@ class ImageController extends AbstractController
             $ext = $file->guessExtension();
             $newFileName = $safeFileName . '-' . uniqid() . $ext;
             $imageEntity->setName($newFileName);
-            $imageEntity->setPath('/upload');
+            $imageEntity->setPath('/upload/'.$imageEntity->getName());
 
 
             if (!$ext) {
