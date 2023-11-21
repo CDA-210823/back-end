@@ -15,23 +15,23 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image'])]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image'])]
     private ?float $price = null;
 
     #[ORM\Column]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image'])]
     private ?int $stock = null;
 
     #[ORM\ManyToMany(targetEntity: Cart::class, mappedBy: 'product')]
