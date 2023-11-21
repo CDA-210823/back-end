@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Image;
 use App\Repository\ImageRepository;
+use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -47,12 +48,20 @@ class ImageController extends AbstractController
     }
 
     #[Route('/add', name: 'app_image_new', methods: ["POST"])]
-    public function add(Request $request, SluggerInterface $slugger, ParameterBagInterface $parameterBag): JsonResponse
+    public function add
+    (
+        Request $request,
+        SluggerInterface $slugger,
+        ParameterBagInterface $parameterBag,
+        ProductRepository $productRepository,
+    ): JsonResponse
     {
         $file = $this->serializer->deserialize($request->getContent(), Image::class, 'json');
-        $file->setOwner($this->getUser());
 
         $content = $request->toArray();
+        if ($productRepository->find($content['idProduct'])) {
+            $file->setProduct($productRepository->find($content['idProduct']));
+        }
         $this->uploadImage($content['file'], $slugger, $file, $parameterBag);
 
         return new JsonResponse(['message' => 'Image added to DB'], Response::HTTP_CREATED);
