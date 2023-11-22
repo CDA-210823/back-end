@@ -18,10 +18,10 @@ class Cart
     private ?int $id = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    #[Groups(['cart'])]
     private ?User $user = null;
 
     #[ORM\OneToMany(mappedBy: 'cart', targetEntity: CartProduct::class)]
+    #[Groups(['cart'])]
     private Collection $cartProducts;
 
     public function __construct()

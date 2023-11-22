@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Cart;
 use App\Entity\CartProduct;
+use App\Repository\CartProductRepository;
 use App\Repository\CartRepository;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
@@ -90,6 +91,30 @@ class CartController extends AbstractController
             ['message' => "Le produit que vous souhaiter ajouter n'existe plus ou n'est plus disponible"],
             Response::HTTP_OK
         );
+    }
+
+    #[Route('/removeProduct', methods: ['POST', 'GET'])]
+    public function removeProductFromCart
+    (Request $request, ProductRepository $productRepository, CartProductRepository $cartProductRepository): JsonResponse
+    {
+        $content = $request->toArray();
+        $product = $productRepository->find($content['idProduct']);
+        $cart = $this->cartRepository->find($content['idCart']);
+        if ($product && $cart && $cartProductRepository->findOneBy(['product' => $product,'cart' => $cart,])){
+            $productToRemove = $cartProductRepository->findOneBy(
+                [
+                    'product' => $product,
+                    'cart' => $cart,
+                ]
+            );
+            $this->em->remove($productToRemove);
+            $this->em->flush();
+            return new JsonResponse(['message' => 'Le produit a bien été retiré du panier'], Response::HTTP_OK);
+        }
+
+        return new JsonResponse(['message' => "Le produit n'est pas présent dans votre panier"], Response::HTTP_NOT_FOUND);
+
+
     }
 
     #[Route('/edit/{id}', name: 'app_cart_edit', methods: ["PUT"])]
