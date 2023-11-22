@@ -28,6 +28,9 @@ class Image
     #[Groups(['image'])]
     private ?string $path = null;
 
+    #[ORM\Column(length: 20)]
+    private ?string $ext = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -66,6 +69,18 @@ class Image
     public function setPath(?string $path): void
     {
         $this->path = $path;
+    }
+
+    public function getExt(): ?string
+    {
+        return $this->ext;
+    }
+
+    public function setExt(string $ext): static
+    {
+        $this->ext = $ext;
+
+        return $this;
     }
 
 }

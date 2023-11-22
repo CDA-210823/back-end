@@ -8,6 +8,8 @@ use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,30 +58,30 @@ class ImageController extends AbstractController
         ProductRepository $productRepository,
     ): JsonResponse
     {
-        $file = $this->serializer->deserialize($request->getContent(), Image::class, 'json');
+        $image = new Image();
 
-        $content = $request->toArray();
-        if ($productRepository->find($content['idProduct'])) {
-            $file->setProduct($productRepository->find($content['idProduct']));
+        if ($productRepository->find($request->get('idProduct'))) {
+            $image->setProduct($productRepository->find($request->get('idProduct')));
         }
-        $this->uploadImage($content['file'], $slugger, $file, $parameterBag);
+        $this->uploadImage($request->files->get('file'), $slugger, $image, $parameterBag);
 
         return new JsonResponse(['message' => 'Image added to DB'], Response::HTTP_CREATED);
     }
 
 
-    #[Route('/edit/{id}', name: 'app_image_edit', methods: ["PUT"])]
+    #[Route('/edit', name: 'app_image_edit', methods: ["POST"])]
     public function edit
-    (Image $image, Request $request, SluggerInterface $slugger, ParameterBagInterface $parameterBag): JsonResponse
+    (
+        Request $request,
+        SluggerInterface $slugger,
+        ParameterBagInterface $parameterBag,
+        ImageRepository $imageRepository
+    ): JsonResponse
     {
-        if ($image){
-            $parameterBag->remove($image->getName());
-            $file = $this->serializer->deserialize($request->getContent(), Image::class, 'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $image]
-            );
-
-            $content = $request->toArray();
-            $this->uploadImage($content['file'], $slugger, $file, $parameterBag);
+        if ($imageRepository->find($request->get('idImage'))){
+            $image = $imageRepository->find($request->get('idImage'));
+            unlink('../upload/'.$image->getName().'.'.$image->getExt());
+            $this->uploadImage($request->files->get('file'), $slugger, $image, $parameterBag);
 
             return new JsonResponse(['message' => "L'image à bien été modifié"], Response::HTTP_OK);
         }
@@ -87,11 +89,11 @@ class ImageController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'app_image_delete', methods: ["DELETE"])]
-    public function delete(int $id, ParameterBagInterface $parameterBag): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         $image = $this->imageRepository->find($id);
         if ($image){
-            $parameterBag->remove($image->getName());
+            unlink('../upload/'.$image->getName().'.'.$image->getExt());
             $this->imageRepository->remove($image, true);
             return new JsonResponse(['message' => "L'image' à bien été supprimé"], Response::HTTP_OK);
         }
@@ -115,14 +117,13 @@ class ImageController extends AbstractController
 
     public function uploadImage
     (
-        $imageName,
+        UploadedFile $file,
         SluggerInterface $slugger,
         Image $imageEntity,
         ParameterBagInterface $container
     )
     : void
     {
-        $file = $imageName->getData();
 
         if ($file) {
             $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
@@ -131,7 +132,7 @@ class ImageController extends AbstractController
             $newFileName = $safeFileName . '-' . uniqid() . $ext;
             $imageEntity->setName($newFileName);
             $imageEntity->setPath('/upload/'.$imageEntity->getName());
-
+            $imageEntity->setExt($ext);
 
             if (!$ext) {
                 $ext = 'bin';
