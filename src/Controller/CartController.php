@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Cart;
+use App\Entity\CartProduct;
 use App\Repository\CartRepository;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
@@ -47,7 +48,7 @@ class CartController extends AbstractController
     }
 
     #[Route('/new', name: 'app_cart_new', methods: ["POST"])]
-    public function new(Request $request, UserRepository $userRepository): JsonResponse
+    public function new(UserRepository $userRepository): JsonResponse
     {
         $user = $userRepository->find($this->getUser());
         if (!$this->cartRepository->getCartByUser($user->getId())){
@@ -66,14 +67,21 @@ class CartController extends AbstractController
 
     #[Route('/addProduct', name: 'app_cart_add_product_to_cart', methods: ['POST'])]
     public function addProductToCart
-    (Request $request, ProductRepository $productRepository): JsonResponse
+    (Request $request, ProductRepository $productRepository, EntityManagerInterface $em): JsonResponse
     {
 
         $content = $request->toArray();
         $product = $productRepository->find($content['idProduct']);
         $cart = $this->cartRepository->find($content['idCart']);
         if ($cart && $cart->getUser() === $this->getUser() && $product){
-            $cart->addProduct($product);
+
+            $cartProduct = new CartProduct();
+            $cartProduct->setProduct($product);
+            $cartProduct->setCart($cart);
+            $cartProduct->setQuantity($content['quantity']);
+
+            $cart->addCartProduct($cartProduct);
+            $em->persist($cartProduct);
             $this->cartRepository->save($cart, true);
             return new JsonResponse(['message' => 'Produit ajouter au panier avec succès'], Response::HTTP_OK);
         }
