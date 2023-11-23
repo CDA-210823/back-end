@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Cart;
+use App\Entity\CartProduct;
+use App\Repository\CartProductRepository;
 use App\Repository\CartRepository;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
@@ -47,7 +49,7 @@ class CartController extends AbstractController
     }
 
     #[Route('/new', name: 'app_cart_new', methods: ["POST"])]
-    public function new(Request $request, UserRepository $userRepository): JsonResponse
+    public function new(UserRepository $userRepository): JsonResponse
     {
         $user = $userRepository->find($this->getUser());
         if (!$this->cartRepository->getCartByUser($user->getId())){
@@ -66,14 +68,21 @@ class CartController extends AbstractController
 
     #[Route('/addProduct', name: 'app_cart_add_product_to_cart', methods: ['POST'])]
     public function addProductToCart
-    (Request $request, ProductRepository $productRepository): JsonResponse
+    (Request $request, ProductRepository $productRepository, EntityManagerInterface $em): JsonResponse
     {
 
         $content = $request->toArray();
         $product = $productRepository->find($content['idProduct']);
         $cart = $this->cartRepository->find($content['idCart']);
         if ($cart && $cart->getUser() === $this->getUser() && $product){
-            $cart->addProduct($product);
+
+            $cartProduct = new CartProduct();
+            $cartProduct->setProduct($product);
+            $cartProduct->setCart($cart);
+            $cartProduct->setQuantity($content['quantity']);
+
+            $cart->addCartProduct($cartProduct);
+            $em->persist($cartProduct);
             $this->cartRepository->save($cart, true);
             return new JsonResponse(['message' => 'Produit ajouter au panier avec succès'], Response::HTTP_OK);
         }
@@ -82,6 +91,30 @@ class CartController extends AbstractController
             ['message' => "Le produit que vous souhaiter ajouter n'existe plus ou n'est plus disponible"],
             Response::HTTP_OK
         );
+    }
+
+    #[Route('/removeProduct', methods: ['POST', 'GET'])]
+    public function removeProductFromCart
+    (Request $request, ProductRepository $productRepository, CartProductRepository $cartProductRepository): JsonResponse
+    {
+        $content = $request->toArray();
+        $product = $productRepository->find($content['idProduct']);
+        $cart = $this->cartRepository->find($content['idCart']);
+        if ($product && $cart && $cartProductRepository->findOneBy(['product' => $product,'cart' => $cart,])){
+            $productToRemove = $cartProductRepository->findOneBy(
+                [
+                    'product' => $product,
+                    'cart' => $cart,
+                ]
+            );
+            $this->em->remove($productToRemove);
+            $this->em->flush();
+            return new JsonResponse(['message' => 'Le produit a bien été retiré du panier'], Response::HTTP_OK);
+        }
+
+        return new JsonResponse(['message' => "Le produit n'est pas présent dans votre panier"], Response::HTTP_NOT_FOUND);
+
+
     }
 
     #[Route('/edit/{id}', name: 'app_cart_edit', methods: ["PUT"])]
