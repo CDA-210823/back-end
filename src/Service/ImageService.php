@@ -28,7 +28,7 @@ class ImageService
                 $ext = 'bin';
             }
 
-            if (in_array($ext, $availableExt)) {
+            if (in_array($ext, $availableExt) && $file->getSize() < 5000000) {
                 $file->move($container->get('upload.directory'), $newFileName . '.' . $ext);
                 return true;
             }

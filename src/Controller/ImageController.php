@@ -33,7 +33,15 @@ class ImageController extends AbstractController
      * @param ParameterBagInterface $parameterBag
      * @param ProductRepository $productRepository
      */
-    public function __construct(SerializerInterface $serializer, ImageRepository $imageRepository, ImageService $imageService, SluggerInterface $slugger, ParameterBagInterface $parameterBag, ProductRepository $productRepository)
+    public function __construct
+    (
+        SerializerInterface $serializer,
+        ImageRepository $imageRepository,
+        ImageService $imageService,
+        SluggerInterface $slugger,
+        ParameterBagInterface $parameterBag,
+        ProductRepository $productRepository
+    )
     {
         $this->serializer = $serializer;
         $this->imageRepository = $imageRepository;
