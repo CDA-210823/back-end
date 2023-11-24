@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -48,6 +49,7 @@ class ProductController extends AbstractController
     }
 
     #[Route("/new", name: 'app_product_new', methods: ['POST'])]
+    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
     public function new(Request $request, ValidatorErrorService $validatorService): JsonResponse
     {
         $product= $this->serializer->deserialize($request->getContent(), Product::class, 'json');
@@ -68,6 +70,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/edit/{id}', name: 'app_product_edit', methods: ["PUT"])]
+    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
     public function edit
     (Request $request,ValidatorErrorService $validator, Product $product = null): JsonResponse
     {
@@ -102,6 +105,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'app_product_delete', methods: ["DELETE"])]
+    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
     public function delete(int $id): JsonResponse
     {
         $product = $this->productRepository->find($id);

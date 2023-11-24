@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -20,18 +21,31 @@ class Product
 
     #[ORM\Column(length: 50)]
     #[Groups(['product', 'image', 'cart'])]
+    #[Assert\Length(
+        min: 4,
+        max: 50,
+        minMessage: "Le nom de produit doit être de {{ limit }} caractères minimum",
+        maxMessage: "Le nom du produit doit être de {{ limit }} caractères maximum",
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['product', 'image', 'cart'])]
+    #[Assert\Length(
+        min: 10,
+        minMessage: "La description doit contenir {{ limit }} caractères minimum",
+    )]
     private ?string $description = null;
 
     #[ORM\Column]
     #[Groups(['product', 'image', 'cart'])]
+    #[Assert\Positive(message:"Le prix doit être positif")]
+    #[Assert\NotBlank(message: "Le champ ne peut pas être vide")]
     private ?float $price = null;
 
     #[ORM\Column]
     #[Groups(['product', 'image', 'cart'])]
+    #[Assert\NotBlank(message: "Le champ ne peut pas être vide")]
     private ?int $stock = null;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
