@@ -15,6 +15,7 @@ class ImageService
     (UploadedFile $file, SluggerInterface $slugger, Image $imageEntity, ParameterBagInterface $container): bool
     {
         $availableExt = ['bin', 'png', 'jpg', 'svg', 'webp', 'jpeg'];
+        $availableMimeType = ['image/gif', 'image/png', 'image/jpeg', 'image/bmp', 'image/webp'];
         if ($file) {
             $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $safeFileName = $slugger->slug($originalFileName);
@@ -28,7 +29,11 @@ class ImageService
                 $ext = 'bin';
             }
 
-            if (in_array($ext, $availableExt) && $file->getSize() < 5000000) {
+            if (
+                in_array($ext, $availableExt)
+                && $file->getSize() < 5000000
+                && in_array($file->getMimeType(), $availableMimeType)
+            ) {
                 $file->move($container->get('upload.directory'), $newFileName . '.' . $ext);
                 return true;
             }

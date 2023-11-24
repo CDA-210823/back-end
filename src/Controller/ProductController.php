@@ -51,7 +51,7 @@ class ProductController extends AbstractController
     public function new(Request $request, ValidatorErrorService $validatorService): JsonResponse
     {
         $product= $this->serializer->deserialize($request->getContent(), Product::class, 'json');
-
+        // TODO: Add image when create a product (multiple image can be good (optional))
         $errors = $validatorService->getErrors($product);
         if (count($errors) > 0) {
             return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
