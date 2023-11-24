@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Service\ValidatorErrorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/user')]
 class UserController extends AbstractController
@@ -34,7 +36,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/', name: 'app_user', methods: ['GET'])]
-    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
+//    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
     public function getAll(): JsonResponse
     {
         $userList = $this->userRepository->findAll();
@@ -58,12 +60,17 @@ class UserController extends AbstractController
     #[Route('/new', name: 'app_user_add', methods: ['POST'])]
     public function addUser
     (Request $request,
-     UserPasswordHasherInterface $passwordHasher
+     UserPasswordHasherInterface $passwordHasher,
+     ValidatorErrorService $errorService,
     ): JsonResponse
     {
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
 
+        $errors = $errorService->getErrors($user);
+        if (count($errors) > 0) {
+            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+        }
         $this->em->persist($user);
         $this->em->flush();
 
@@ -80,7 +87,9 @@ class UserController extends AbstractController
     public function editUser
     (Request $request,
      User    $currentUser,
-    UserPasswordHasherInterface $passwordHasher
+     UserPasswordHasherInterface $passwordHasher,
+     ValidatorErrorService $errorService,
+
     ): JsonResponse
     {
         $editUser = $this->serializer->deserialize
@@ -89,7 +98,12 @@ class UserController extends AbstractController
             User::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
-        $editUser->setPassword($passwordHasher->hashPassword($currentUser, $currentUser->getPassword()));
+        $editUser->setPassword($passwordHasher->hashPassword($editUser, $editUser->getPassword()));
+
+        $errors = $errorService->getErrors($editUser);
+        if (count($errors) > 0) {
+            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+        }
 
         $this->em->persist($editUser);
         $this->em->flush();
