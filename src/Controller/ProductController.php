@@ -98,7 +98,7 @@ class ProductController extends AbstractController
     {
         $product = $this->productRepository->find($id);
         if ($product) {
-            return new JsonResponse($this->serializer->serialize($product, 'json'), Response::HTTP_OK, [], true);
+            return new JsonResponse($this->serializer->serialize($product, 'json', ['groups'=>'product']), Response::HTTP_OK, [], true);
         }
 
         return new JsonResponse(["message" => "Le produit n'a pas été trouvé"], Response::HTTP_NOT_FOUND);

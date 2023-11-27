@@ -29,7 +29,7 @@ class UserControllerTest extends webTestCase
             'CONTENT_TYPE' => 'application/json',
             ],
             json_encode([$data]));
-       $response = json_decode($this->client->getResponse()->getContent(), true);
+        $response = json_decode($this->client->getResponse()->getContent(), true);
         return $response['token'];
     }
 
