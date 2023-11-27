@@ -36,7 +36,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/', name: 'app_user', methods: ['GET'])]
-//    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
+    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
     public function getAll(): JsonResponse
     {
         $userList = $this->userRepository->findAll();
@@ -123,4 +123,12 @@ class UserController extends AbstractController
         }
         return new JsonResponse(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
+
+    public function errorCreateUser ():JsonResponse
+    {
+
+        return new JsonResponse();
+    }
+
+
 }

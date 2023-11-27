@@ -30,10 +30,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         maxMessage: "L'email doit comporter au maximum {{ limit }} caractères"
     )]
     #[Assert\Email(message: "L'email n'est pas valide")]
-    #[Assert\Regex(
-        '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(fr|com)$',
-        message: "Votre email doit contenir un @ et doit finir par .fr ou .com"
-    )]
+//    #[Assert\Regex(
+//        '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(fr|com)$',
+//        message: "Votre email doit contenir un @ et doit finir par .fr ou .com"
+//    )]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -43,10 +43,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Assert\Regex(
-        '/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/',
-        message: "Votre mot de passe doit contenir un caractère majuscule, minuscule et un caractère spécial"
-    )]
+//    #[Assert\Regex(
+//        '(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/',
+//        message: "Votre mot de passe doit contenir un caractère majuscule, minuscule et un caractère spécial"
+//    )]
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]

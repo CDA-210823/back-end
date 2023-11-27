@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use JetBrains\PhpStorm\NoReturn;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UserControllerTest extends webTestCase
@@ -11,6 +12,19 @@ class UserControllerTest extends webTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
+    }
+
+   public function testToken():void
+    {
+        $data = [
+            'email' => 'angedehain@gmailcom',
+            'password' => 'passwordAzerty1!'
+        ];
+        $this->client->request('GET', '/api/login_check', [], [], [], json_encode($data));
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        dd($response);
+        $token = $response['token'];
     }
 
     public function testCreateUser():void
@@ -74,6 +88,5 @@ class UserControllerTest extends webTestCase
         ];
         $this->client->request('DELETE', '/api/user/11', [], [], [], json_encode($data));
         $this->assertSame(204, $this->client->getResponse()->getStatusCode());
-
     }
 }
