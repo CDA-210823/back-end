@@ -2,17 +2,22 @@
 
 namespace App\Controller;
 
+use App\Entity\Image;
 use App\Entity\Product;
+use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use App\Service\ImageService;
 use App\Service\ValidatorErrorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 
 #[Route('/api/product')]
@@ -48,23 +53,39 @@ class ProductController extends AbstractController
     }
 
     #[Route("/new", name: 'app_product_new', methods: ['POST'])]
-    public function new(Request $request, ValidatorErrorService $validatorService): JsonResponse
+    public function new
+    (
+        Request $request,
+        ValidatorErrorService $validatorService,
+        ImageService $imageService,
+        SluggerInterface $slugger,
+        ParameterBagInterface $container,
+        CategoryRepository $categoryRepository,
+    ): JsonResponse
     {
-        $product= $this->serializer->deserialize($request->getContent(), Product::class, 'json');
-        // TODO: Add image when create a product (multiple image can be good (optional))
+        $category = $categoryRepository->find($request->get('category'));
+        $product= (new Product())
+            ->setPrice($request->get('price'))
+            ->setStock($request->get('stock'))
+            ->setName($request->get('name'))
+            ->setDescription($request->get('description'))
+            ->setCategory($category);
+
+
+        $image = new Image();
+        if ($imageService->uploadImage($request->files->get('image'), $slugger, $image, $container)){
+            $product->addImageProduct($image);
+        }
+
         $errors = $validatorService->getErrors($product);
         if (count($errors) > 0) {
             return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
         }
         $this->em->persist($product);
+        $this->em->persist($image);
         $this->em->flush();
 
-        return new JsonResponse(
-            $this->serializer->serialize($product,'json'),
-            Response::HTTP_OK,
-            [],
-            true
-        );
+        return new JsonResponse(["message" => "product added"]);
     }
 
     #[Route('/edit/{id}', name: 'app_product_edit', methods: ["PUT"])]
