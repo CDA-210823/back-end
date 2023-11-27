@@ -6,7 +6,6 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use http\Message;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -30,10 +29,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         maxMessage: "L'email doit comporter au maximum {{ limit }} caractères"
     )]
     #[Assert\Email(message: "L'email n'est pas valide")]
-//    #[Assert\Regex(
-//        '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(fr|com)$',
-//        message: "Votre email doit contenir un @ et doit finir par .fr ou .com"
-//    )]
+    #[Assert\Regex(
+        "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,3}$/",
+        message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères et maximum 3"
+    )]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -43,10 +42,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-//    #[Assert\Regex(
-//        '(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/',
-//        message: "Votre mot de passe doit contenir un caractère majuscule, minuscule et un caractère spécial"
-//    )]
+    #[Assert\Regex(
+        '/^(?=.*[A-Z])(?=.*[a-z])(?=.*[#?!@$%^&*.\\-]).{8,}$/',
+        message: "Votre mot de passe doit contenir un caractère majuscule, minuscule et un caractère spécial, 8caractères"
+    )]
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]
