@@ -62,6 +62,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Opinion::class)]
     private Collection $opinion;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $lastName = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $firstName = null;
+
     public function __construct()
     {
         $this->address = new ArrayCollection();
@@ -231,6 +237,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $opinion->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(?string $lastName): static
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): static
+    {
+        $this->firstName = $firstName;
 
         return $this;
     }
