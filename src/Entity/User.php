@@ -31,8 +31,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     #[Assert\Email(message: "L'email n'est pas valide")]
     #[Assert\Regex(
-        '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(fr|com)$',
-        message: "Votre email doit contenir un @ et doit finir par .fr ou .com"
+
+        "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,3}$/",
+        message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères et maximum 3"
     )]
     private ?string $email = null;
 
@@ -44,8 +45,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     #[Assert\Regex(
-        '/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/',
-        message: "Votre mot de passe doit contenir un caractère majuscule, minuscule et un caractère spécial"
+        '/^(?=.*[A-Z])(?=.*[a-z])(?=.*[#?!@$%^&*.\\-]).{8,}$/',
+        message: "Votre mot de passe doit contenir un caractère majuscule, minuscule et un caractère spécial, 8caractères"
     )]
     private ?string $password = null;
 
