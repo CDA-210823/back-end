@@ -36,6 +36,9 @@ class Address
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'address')]
     private Collection $users;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $recipientName = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -117,6 +120,18 @@ class Address
         if ($this->users->removeElement($user)) {
             $user->removeAddress($this);
         }
+
+        return $this;
+    }
+
+    public function getRecipientName(): ?string
+    {
+        return $this->recipientName;
+    }
+
+    public function setRecipientName(?string $recipientName): static
+    {
+        $this->recipientName = $recipientName;
 
         return $this;
     }
