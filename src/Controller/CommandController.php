@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/command')]
 class CommandController extends AbstractController
@@ -45,10 +46,19 @@ class CommandController extends AbstractController
     }
 
     #[Route('/new', name: "api_command_new", methods: ['POST'])]
-    public function new(Request $request, SerializerInterface $serializer): JsonResponse
+    public function new(Request $request, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
     {
         $data = $request->getContent();
         $command = $serializer->deserialize($data, Command::class, 'json');
+
+        $errors = $validator->validate($command);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
+            }
+            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
 
         $this->commandService->manageCommand($command);
 
@@ -61,16 +71,24 @@ class CommandController extends AbstractController
     }
 
     #[Route('/update/{id}', name: "api_command_update", methods: ['PUT'])]
-    public function update(Request $request, Command $command, SerializerInterface $serializer): JsonResponse
+    public function update(Request $request, Command $command, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
     {
         $data = $request->getContent();
         $updatedCommand = $serializer->deserialize($data, Command::class, 'json');
+
+        $errors = $validator->validate($updatedCommand);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
+            }
+            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
 
         $command->setNumber($updatedCommand->getNumber());
         if ($updatedCommand->getStatus() !== null) {
             $command->setStatus($updatedCommand->getStatus());
         }
-
         $command->setTotalPrice($updatedCommand->getTotalPrice());
         $command->getCommandProducts()->clear();
         foreach ($updatedCommand->getCommandProducts() as $updatedCommandProduct) {
@@ -86,7 +104,7 @@ class CommandController extends AbstractController
 
 
     #[Route('/delete/{id}', name: "api_command_delete", methods: ['DELETE'])]
-    public function delete(Command $command): JsonResponse
+    public function delete(Command $command, ValidatorInterface $validator): JsonResponse
     {
         $this->entityManager->remove($command);
         $this->entityManager->flush();

@@ -11,17 +11,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/category')]
 class CategoryController extends AbstractController
 {
     private $entityManager;
     private $categoryRepository;
+    private $validator;
 
-    public function __construct(EntityManagerInterface $entityManager, CategoryRepository $categoryRepository)
+    public function __construct(EntityManagerInterface $entityManager, CategoryRepository $categoryRepository, ValidatorInterface $validator)
     {
         $this->entityManager = $entityManager;
         $this->categoryRepository = $categoryRepository;
+        $this->validator = $validator;
     }
 
     #[Route('/', name: "api_category_index", methods: ['GET'])]
@@ -47,6 +50,17 @@ class CategoryController extends AbstractController
         $data = $request->getContent();
         $category = $serializer->deserialize($data, Category::class, 'json');
 
+        $errors = $this->validator->validate($category);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+
+            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
+
         $this->entityManager->persist($category);
         $this->entityManager->flush();
 
@@ -60,6 +74,18 @@ class CategoryController extends AbstractController
     {
         $data = $request->getContent();
         $updatedCategory = $serializer->deserialize($data, Category::class, 'json');
+
+        $errors = $this->validator->validate($updatedCategory);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+
+            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
+
         $category->setName($updatedCategory->getName());
 
         foreach ($updatedCategory->getProducts() as $updatedProduct) {
@@ -72,7 +98,6 @@ class CategoryController extends AbstractController
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
     }
 
-    #[Route('/delete/{id}', name: "api_category_delete", methods: ['DELETE'])]
     public function delete(Category $category): JsonResponse
     {
         $this->entityManager->remove($category);
