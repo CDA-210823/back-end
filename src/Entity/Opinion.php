@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\OpinionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: OpinionRepository::class)]
 class Opinion
@@ -12,12 +13,15 @@ class Opinion
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+	#[Groups(['opinion:list'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['opinion:list'])]
     private ?string $opinion = null;
 
     #[ORM\Column]
+    #[Groups(['opinion:list'])]
     private ?int $note = null;
 
     #[ORM\ManyToOne(inversedBy: 'opinion')]

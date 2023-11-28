@@ -2,24 +2,28 @@
 
 namespace App\Entity;
 
-use App\Repository\CommandProductRepository;
+use App\Repository\CartProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ORM\Entity(repositoryClass: CommandProductRepository::class)]
-class CommandProduct
+#[ORM\Entity(repositoryClass: CartProductRepository::class)]
+class CartProduct
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['cart'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['cart'])]
     private ?int $quantity = null;
 
-    #[ORM\ManyToOne(inversedBy: 'commandProducts')]
-    private ?Command $command = null;
+    #[ORM\ManyToOne(inversedBy: 'cartProducts')]
+    private ?Cart $cart = null;
 
-    #[ORM\ManyToOne(inversedBy: 'commandProducts')]
+    #[ORM\ManyToOne(inversedBy: 'cartProducts')]
+    #[Groups(['cart'])]
     private ?Product $product = null;
 
     public function getId(): ?int
@@ -39,14 +43,14 @@ class CommandProduct
         return $this;
     }
 
-    public function getCommand(): ?Command
+    public function getCart(): ?Cart
     {
-        return $this->command;
+        return $this->cart;
     }
 
-    public function setCommand(?Command $command): static
+    public function setCart(?Cart $cart): static
     {
-        $this->command = $command;
+        $this->cart = $cart;
 
         return $this;
     }

@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -15,27 +16,37 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image', 'cart'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image', 'cart'])]
+    #[Assert\Length(
+        min: 4,
+        max: 50,
+        minMessage: "Le nom de produit doit être de {{ limit }} caractères minimum",
+        maxMessage: "Le nom du produit doit être de {{ limit }} caractères maximum",
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image', 'cart'])]
+    #[Assert\Length(
+        min: 10,
+        minMessage: "La description doit contenir {{ limit }} caractères minimum",
+    )]
     private ?string $description = null;
 
     #[ORM\Column]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image', 'cart'])]
+    #[Assert\Positive(message:"Le prix doit être positif")]
+    #[Assert\NotBlank(message: "Le champ ne peut pas être vide")]
     private ?float $price = null;
 
     #[ORM\Column]
-    #[Groups(['product'])]
+    #[Groups(['product', 'image', 'cart'])]
+    #[Assert\NotBlank(message: "Le champ ne peut pas être vide")]
     private ?int $stock = null;
-
-    #[ORM\ManyToMany(targetEntity: Cart::class, mappedBy: 'product')]
-    private Collection $carts;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
     private Collection $commandProducts;
@@ -44,13 +55,18 @@ class Product
     private Collection $imageProduct;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[Groups(['cart'])]
     private ?Category $category = null;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartProduct::class)]
+    private Collection $cartProducts;
 
     public function __construct()
     {
         $this->carts = new ArrayCollection();
         $this->commandProducts = new ArrayCollection();
         $this->imageProduct = new ArrayCollection();
+        $this->cartProducts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -102,33 +118,6 @@ class Product
     public function setStock(int $stock): static
     {
         $this->stock = $stock;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Cart>
-     */
-    public function getCarts(): Collection
-    {
-        return $this->carts;
-    }
-
-    public function addCart(Cart $cart): static
-    {
-        if (!$this->carts->contains($cart)) {
-            $this->carts->add($cart);
-            $cart->addProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCart(Cart $cart): static
-    {
-        if ($this->carts->removeElement($cart)) {
-            $cart->removeProduct($this);
-        }
 
         return $this;
     }
@@ -201,6 +190,36 @@ class Product
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CartProduct>
+     */
+    public function getCartProducts(): Collection
+    {
+        return $this->cartProducts;
+    }
+
+    public function addCartProduct(CartProduct $cartProduct): static
+    {
+        if (!$this->cartProducts->contains($cartProduct)) {
+            $this->cartProducts->add($cartProduct);
+            $cartProduct->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCartProduct(CartProduct $cartProduct): static
+    {
+        if ($this->cartProducts->removeElement($cartProduct)) {
+            // set the owning side to null (unless already changed)
+            if ($cartProduct->getProduct() === $this) {
+                $cartProduct->setProduct(null);
+            }
+        }
 
         return $this;
     }

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ImageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ImageRepository::class)]
 class Image
@@ -11,17 +12,33 @@ class Image
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['image'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['image'])]
     private ?string $name = null;
 
+
     #[ORM\ManyToOne(inversedBy: 'imageProduct')]
+    #[Groups(['image'])]
     private ?Product $product = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['image'])]
+    private ?string $path = null;
+
+    #[ORM\Column(length: 20)]
+    private ?string $ext = null;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getName(): ?string
@@ -29,11 +46,9 @@ class Image
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getProduct(): ?Product
@@ -41,10 +56,31 @@ class Image
         return $this->product;
     }
 
-    public function setProduct(?Product $product): static
+    public function setProduct(?Product $product): void
     {
         $this->product = $product;
+    }
+
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    public function setPath(?string $path): void
+    {
+        $this->path = $path;
+    }
+
+    public function getExt(): ?string
+    {
+        return $this->ext;
+    }
+
+    public function setExt(string $ext): static
+    {
+        $this->ext = $ext;
 
         return $this;
     }
+
 }
