@@ -42,7 +42,7 @@ class ProductController extends AbstractController
     }
 
     #[Route("/", name: 'app_product_getall', methods: ['GET'])]
-    public function getAll():JsonResponse
+    public function getAll(): JsonResponse
     {
         return new JsonResponse(
             $this->serializer->serialize(
@@ -52,6 +52,19 @@ class ProductController extends AbstractController
                 Response::HTTP_OK,
                 [],
                 true);
+    }
+
+    #[Route('/getByDate', name: 'app_product_getbydate', methods: ['GET'])]
+    public function getByDate(): JsonResponse
+    {
+        return new JsonResponse(
+            $this->serializer->serialize(
+                $this->productRepository->getByDate(),
+                'json',
+                ['groups' => 'product']),
+            Response::HTTP_OK,
+            [],
+            true);
     }
 
     #[Route("/new", name: 'app_product_new', methods: ['POST'])]
