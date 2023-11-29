@@ -53,6 +53,7 @@ class Product
     private Collection $commandProducts;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Image::class)]
+    #[Groups(['product'])]
     private Collection $imageProduct;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
