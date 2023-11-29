@@ -67,7 +67,7 @@ class UserController extends AbstractController
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $errors = $errorService->getErrors($user);
         if (count($errors) > 0) {
-            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => $errors], Response::HTTP_BAD_REQUEST);
         }
 
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
