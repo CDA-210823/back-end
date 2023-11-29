@@ -76,7 +76,6 @@ class ProductController extends AbstractController
             ->setDateAdd(new DateTime())
         ;
 
-
         $image = new Image();
         if ($imageService->uploadImage($request->files->get('image'), $slugger, $image, $container)){
             $product->addImageProduct($image);

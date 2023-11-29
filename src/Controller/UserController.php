@@ -99,12 +99,13 @@ class UserController extends AbstractController
             User::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
-        $editUser->setPassword($passwordHasher->hashPassword($editUser, $editUser->getPassword()));
 
         $errors = $errorService->getErrors($editUser);
         if (count($errors) > 0) {
             return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
         }
+
+        $editUser->setPassword($passwordHasher->hashPassword($editUser, $editUser->getPassword()));
 
         $this->em->persist($editUser);
         $this->em->flush();
@@ -130,6 +131,4 @@ class UserController extends AbstractController
 
         return new JsonResponse();
     }
-
-
 }
