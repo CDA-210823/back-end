@@ -22,7 +22,7 @@ class ImageService
             $ext = $file->guessExtension();
             $newFileName = $safeFileName . '-' . uniqid() . $ext;
             $imageEntity->setName($newFileName);
-            $imageEntity->setPath('/upload/' . $imageEntity->getName());
+            $imageEntity->setPath('/images/' . $imageEntity->getName());
             $imageEntity->setExt($ext);
 
             if (!$ext) {
