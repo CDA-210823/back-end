@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -60,6 +61,9 @@ class Product
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartProduct::class)]
     private Collection $cartProducts;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?DateTimeInterface $dateAdd = null;
 
     public function __construct()
     {
@@ -194,6 +198,18 @@ class Product
         return $this;
     }
 
+    public function getDateAdd(): ?\DateTimeInterface
+    {
+        return $this->dateAdd;
+    }
+
+    public function setDateAdd(\DateTimeInterface $dateAdd): static
+    {
+        $this->dateAdd = $dateAdd;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, CartProduct>
      */
@@ -223,4 +239,6 @@ class Product
 
         return $this;
     }
+
+
 }
