@@ -32,8 +32,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: "L'email n'est pas valide")]
     #[Assert\Regex(
 
-        "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,3}$/",
-        message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères et maximum 3"
+        "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/",
+        message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères"
     )]
     private ?string $email = null;
 
