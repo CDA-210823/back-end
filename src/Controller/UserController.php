@@ -131,7 +131,15 @@ class UserController extends AbstractController
         }
         return new JsonResponse(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
-
+	#[Route('/searcbyemail', name: 'app_user_email', methods: ['POST'])]
+	public function searchByEmail(Request $request) : JsonResponse
+	{
+		$content = $request->toArray();
+		$email = $content['email'];
+		$user = $this->userRepository->findOneBy(['email' => $email]);
+		$jsonUser = $this->serializer->serialize($user, 'json', ['groups' => 'getUser']);
+		return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
+	}
     public function errorCreateUser ():JsonResponse
     {
 

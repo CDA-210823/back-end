@@ -14,23 +14,23 @@ class Address
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 70)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $street = null;
 
     #[ORM\Column(length: 10)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $postal_code = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $number_street = null;
 
     #[ORM\Column(length: 70)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $city = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'address')]
