@@ -68,7 +68,7 @@ class UserController extends AbstractController
 	    $email = $content['email'];
 		$existsUser = $this->userRepository->findOneBy(['email' => $email]);
 		if ($existsUser) {
-			return new JsonResponse(['message' => 'Cet email est déjà utilisé̀'], Response::HTTP_BAD_REQUEST);
+			return new JsonResponse(['message' => 'Cet email est déjà utilisé̀'], Response::HTTP_IM_USED);
 		}
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $errors = $errorService->getErrors($user);
