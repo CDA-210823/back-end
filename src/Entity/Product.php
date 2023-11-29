@@ -49,6 +49,9 @@ class Product
     #[Assert\NotBlank(message: "Le champ ne peut pas être vide")]
     private ?int $stock = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?DateTimeInterface $dateAdd = null;
+
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
     private Collection $commandProducts;
 
@@ -63,8 +66,7 @@ class Product
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartProduct::class)]
     private Collection $cartProducts;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?DateTimeInterface $dateAdd = null;
+
 
     public function __construct()
     {
