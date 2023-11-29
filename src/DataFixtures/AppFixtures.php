@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Command;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -32,6 +33,16 @@ class AppFixtures extends Fixture
         $manager->persist($user);
         $manager->persist($admin);
 
+        $command = new Command();
+        $command->setNumber(1);
+        $command->setDate(new \DateTime('now'));
+        $command->setStatus('En cours');
+        $command->setTotalPrice(100.0);
+
+        $user = $manager->getRepository(User::class)->findOneBy(['email' => 'user@local.host']);
+        $command->setUser($user);
+
+        $manager->persist($command);
         $manager->flush();
     }
 }
