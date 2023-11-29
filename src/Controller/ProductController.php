@@ -8,6 +8,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use App\Service\ImageService;
 use App\Service\ValidatorErrorService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -71,7 +72,9 @@ class ProductController extends AbstractController
             ->setStock($request->get('stock'))
             ->setName($request->get('name'))
             ->setDescription($request->get('description'))
-            ->setCategory($category);
+            ->setCategory($category)
+            ->setDateAdd(new DateTime())
+        ;
 
 
         $image = new Image();
