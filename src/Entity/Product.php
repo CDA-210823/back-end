@@ -50,6 +50,8 @@ class Product
     private ?int $stock = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['product', 'image', 'cart'])]
+    /** TODO add Validator */
     private ?DateTimeInterface $dateAdd = null;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]

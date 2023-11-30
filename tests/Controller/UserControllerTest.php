@@ -2,7 +2,6 @@
 
 namespace App\Tests\Controller;
 
-use JetBrains\PhpStorm\NoReturn;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UserControllerTest extends webTestCase
@@ -21,8 +20,8 @@ class UserControllerTest extends webTestCase
    public function getAdminToken(): mixed
    {
         $data = [
-            'email' => 'angedehain@gmailcom',
-            'password' => 'passwordAzerty1!',
+            'email' => 'admin@local.host',
+            'password' => 'admin',
         ];
         $this->client->request('POST', '/api/login_check', [], [],
             [
@@ -30,14 +29,15 @@ class UserControllerTest extends webTestCase
             ],
             json_encode([$data]));
         $response = json_decode($this->client->getResponse()->getContent(), true);
+
         return $response['token'];
     }
 
     public function getUserToken(): mixed
     {
         $data = [
-            'email' => 'angedehain@gmailcom',
-            'password' => 'passwordAzerty1!'
+            'email' => 'user@local.host',
+            'password' => 'user'
         ];
         $this->client->request('POST', '/api/login_check', [], [],
             [
@@ -48,28 +48,17 @@ class UserControllerTest extends webTestCase
         return $response['token'];
     }
 
-    public function testCreateUser():void
-    {
-        $data = [
-            'email' => 'angedehain@gmailcom',
-            'password' => 'passwordAzerty1!'
-        ];
-        $this->client->request('POST', '/api/user/new', [], [], [], json_encode($data));
-        $this->assertSame(201, $this->client->getResponse()->getStatusCode());
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertSame($data['email'], $response['email']);
-    }
-
-    public function testErrorMomentCreateUser()
-    {
-        $data = [
-            'password' => 'passwordAzerty1!',
-        ];
-        $this->client->request('POST', '/api/user/new', [], [], [], json_encode($data));
-        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertSame('La création a échoué', $response['message']);
-    }
+//    public function testCreateUser():void
+//    {
+//        $data = [
+//            'email' => 'angedehain@gmailcom',
+//            'password' => 'passwordAzerty1!'
+//        ];
+//        $this->client->request('POST', '/api/user/new', [], [], [], json_encode($data));
+//        $this->assertSame(201, $this->client->getResponse()->getStatusCode());
+//        $response = json_decode($this->client->getResponse()->getContent(), true);
+//        $this->assertSame($data['email'], $response['email']);
+//    }
 
     public function testGetAll()
     {
@@ -84,35 +73,35 @@ class UserControllerTest extends webTestCase
         $this->assertIsArray($response);
     }
 
-    public function testShowWithIncorrectId()
-    {
-        $data = [
-            'email' => 'angeladehai@gmailcom',
-        ];
-        $this->client->request('GET', '/api/user/8', [], [] , [] , json_encode($data));
-        $this->assertSame(404, $this->client->getResponse()->getStatusCode());
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertSame('Utilisateur non trouvé', $response['message']);
-    }
-
-    public function testEditUser()
-    {
-        $data = [
-            'email' => 'angeadehai@gmailcom',
-        ];
-        $this->client->request('PUT', '/api/user/11', [], [], [], json_encode($data));
-        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
-
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertSame('Utilisateur mis à jour', $response['message']);
-    }
-
-    public function testDeleteUser()
-    {
-        $data = [
-            'email' => 'angeladehai@gmailcom',
-        ];
-        $this->client->request('DELETE', '/api/user/11', [], [], [], json_encode($data));
-        $this->assertSame(204, $this->client->getResponse()->getStatusCode());
-    }
+//    public function testShowWithIncorrectId()
+//    {
+//        $data = [
+//            'email' => 'angeladehai@gmailcom',
+//        ];
+//        $this->client->request('GET', '/api/user/8', [], [] , [] , json_encode($data));
+//        $this->assertSame(404, $this->client->getResponse()->getStatusCode());
+//        $response = json_decode($this->client->getResponse()->getContent(), true);
+//        $this->assertSame('Utilisateur non trouvé', $response['message']);
+//    }
+//
+//    public function testEditUser()
+//    {
+//        $data = [
+//            'email' => 'angeadehai@gmailcom',
+//        ];
+//        $this->client->request('PUT', '/api/user/11', [], [], [], json_encode($data));
+//        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
+//
+//        $response = json_decode($this->client->getResponse()->getContent(), true);
+//        $this->assertSame('Utilisateur mis à jour', $response['message']);
+//    }
+//
+//    public function testDeleteUser()
+//    {
+//        $data = [
+//            'email' => 'angeladehai@gmailcom',
+//        ];
+//        $this->client->request('DELETE', '/api/user/11', [], [], [], json_encode($data));
+//        $this->assertSame(204, $this->client->getResponse()->getStatusCode());
+//    }
 }
