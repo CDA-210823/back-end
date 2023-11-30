@@ -14,27 +14,30 @@ class Address
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 70)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $street = null;
 
     #[ORM\Column(length: 10)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $postal_code = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $number_street = null;
 
     #[ORM\Column(length: 70)]
-    #[Groups(['address:list'])]
+    #[Groups(['address:list', 'getUser'])]
     private ?string $city = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'address')]
     private Collection $users;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $recipientName = null;
 
     public function __construct()
     {
@@ -117,6 +120,18 @@ class Address
         if ($this->users->removeElement($user)) {
             $user->removeAddress($this);
         }
+
+        return $this;
+    }
+
+    public function getRecipientName(): ?string
+    {
+        return $this->recipientName;
+    }
+
+    public function setRecipientName(?string $recipientName): static
+    {
+        $this->recipientName = $recipientName;
 
         return $this;
     }

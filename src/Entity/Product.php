@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -48,10 +49,16 @@ class Product
     #[Assert\NotBlank(message: "Le champ ne peut pas être vide")]
     private ?int $stock = null;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['product', 'image', 'cart'])]
+    /** TODO add Validator */
+    private ?DateTimeInterface $dateAdd = null;
+
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
     private Collection $commandProducts;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Image::class)]
+    #[Groups(['product'])]
     private Collection $imageProduct;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
@@ -60,6 +67,8 @@ class Product
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartProduct::class)]
     private Collection $cartProducts;
+
+
 
     public function __construct()
     {
@@ -194,6 +203,18 @@ class Product
         return $this;
     }
 
+    public function getDateAdd(): ?\DateTimeInterface
+    {
+        return $this->dateAdd;
+    }
+
+    public function setDateAdd(\DateTimeInterface $dateAdd): static
+    {
+        $this->dateAdd = $dateAdd;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, CartProduct>
      */
@@ -223,4 +244,6 @@ class Product
 
         return $this;
     }
+
+
 }

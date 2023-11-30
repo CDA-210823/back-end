@@ -2,11 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Image;
 use App\Entity\Product;
+use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
+use App\Service\ImageService;
 use App\Service\ValidatorErrorService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 
 #[Route('/api/product')]
@@ -36,7 +42,7 @@ class ProductController extends AbstractController
     }
 
     #[Route("/", name: 'app_product_getall', methods: ['GET'])]
-    public function getAll():JsonResponse
+    public function getAll(): JsonResponse
     {
         return new JsonResponse(
             $this->serializer->serialize(
@@ -48,24 +54,55 @@ class ProductController extends AbstractController
                 true);
     }
 
+    #[Route('/getByDate', name: 'app_product_getbydate', methods: ['GET'])]
+    public function getByDate(): JsonResponse
+    {
+        return new JsonResponse(
+            $this->serializer->serialize(
+                $this->productRepository->getByDate(),
+                'json',
+                ['groups' => 'product']),
+            Response::HTTP_OK,
+            [],
+            true);
+    }
+
     #[Route("/new", name: 'app_product_new', methods: ['POST'])]
     #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
-    public function new(Request $request, ValidatorErrorService $validatorService): JsonResponse
+    public function new
+    (
+        Request $request,
+        ValidatorErrorService $validatorService,
+        ImageService $imageService,
+        SluggerInterface $slugger,
+        ParameterBagInterface $container,
+        CategoryRepository $categoryRepository,
+    ): JsonResponse
     {
-        $product= $this->serializer->deserialize($request->getContent(), Product::class, 'json');
+        $category = $categoryRepository->find($request->get('category'));
+        $product= (new Product())
+            ->setPrice($request->get('price'))
+            ->setStock($request->get('stock'))
+            ->setName($request->get('name'))
+            ->setDescription($request->get('description'))
+            ->setCategory($category)
+            ->setDateAdd(new DateTime())
+        ;
+
+        $image = new Image();
+        if ($imageService->uploadImage($request->files->get('image'), $slugger, $image, $container)){
+            $product->addImageProduct($image);
+        }
+
         $errors = $validatorService->getErrors($product);
         if (count($errors) > 0) {
             return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
         }
         $this->em->persist($product);
+        $this->em->persist($image);
         $this->em->flush();
 
-        return new JsonResponse(
-            $this->serializer->serialize($product,'json'),
-            Response::HTTP_OK,
-            [],
-            true
-        );
+        return new JsonResponse(["message" => "product added"]);
     }
 
     #[Route('/edit/{id}', name: 'app_product_edit', methods: ["PUT"])]

@@ -32,8 +32,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: "L'email n'est pas valide")]
     #[Assert\Regex(
 
-        "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,3}$/",
-        message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères et maximum 3"
+        "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/",
+        message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères"
     )]
     private ?string $email = null;
 
@@ -61,6 +61,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Opinion::class)]
     private Collection $opinion;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $lastName = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $firstName = null;
 
     public function __construct()
     {
@@ -231,6 +237,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $opinion->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(?string $lastName): static
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): static
+    {
+        $this->firstName = $firstName;
 
         return $this;
     }

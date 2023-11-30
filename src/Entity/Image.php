@@ -12,11 +12,11 @@ class Image
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['image'])]
+    #[Groups(['image', 'product'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['image'])]
+    #[Groups(['image', 'product'])]
     private ?string $name = null;
 
 
@@ -25,10 +25,11 @@ class Image
     private ?Product $product = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['image'])]
+    #[Groups(['image', 'product'])]
     private ?string $path = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['product'])]
     private ?string $ext = null;
 
     public function getId(): ?int

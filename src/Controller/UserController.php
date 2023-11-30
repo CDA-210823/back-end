@@ -64,13 +64,20 @@ class UserController extends AbstractController
      ValidatorErrorService $errorService,
     ): JsonResponse
     {
+		$content = $request->toArray();
+	    $email = $content['email'];
+		$existsUser = $this->userRepository->findOneBy(['email' => $email]);
+		if ($existsUser) {
+			return new JsonResponse(['message' => 'Cet email est déjà utilisé̀'], Response::HTTP_IM_USED);
+		}
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
-        $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-
         $errors = $errorService->getErrors($user);
         if (count($errors) > 0) {
-            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => $errors], Response::HTTP_BAD_REQUEST);
         }
+
+        $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+
         $this->em->persist($user);
         $this->em->flush();
 
@@ -98,12 +105,13 @@ class UserController extends AbstractController
             User::class,
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
-        $editUser->setPassword($passwordHasher->hashPassword($editUser, $editUser->getPassword()));
 
         $errors = $errorService->getErrors($editUser);
         if (count($errors) > 0) {
             return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
         }
+
+        $editUser->setPassword($passwordHasher->hashPassword($editUser, $editUser->getPassword()));
 
         $this->em->persist($editUser);
         $this->em->flush();
@@ -123,12 +131,13 @@ class UserController extends AbstractController
         }
         return new JsonResponse(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
-
-    public function errorCreateUser ():JsonResponse
-    {
-
-        return new JsonResponse();
-    }
-
-
+	#[Route('/searchbyemail', name: 'app_user_email', methods: ['POST'])]
+	public function searchByEmail(Request $request) : JsonResponse
+	{
+		$content = $request->toArray();
+		$email = $content['email'];
+		$user = $this->userRepository->findOneBy(['email' => $email]);
+		$jsonUser = $this->serializer->serialize($user, 'json', ['groups' => 'getUser']);
+		return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
+	}
 }
