@@ -51,7 +51,7 @@ class Product
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Groups(['product', 'image', 'cart'])]
-    #[Assert\Date(message: "Le type n'est pas au format date")]
+    #[Assert\NotBlank(message: "La date ne peut pas être vide")]
     private ?DateTimeInterface $dateAdd = null;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
