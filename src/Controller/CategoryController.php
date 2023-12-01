@@ -31,7 +31,7 @@ class CategoryController extends AbstractController
     public function getAllCategory(SerializerInterface $serializer): JsonResponse
     {
         $categories = $this->categoryRepository->findAll();
-        $jsonContent = $serializer->serialize($categories, 'json');
+        $jsonContent = $serializer->serialize($categories, 'json', ['groups' => 'category']);
 
         return new JsonResponse($jsonContent, Response::HTTP_OK, [], true);
     }

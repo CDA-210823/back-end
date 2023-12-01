@@ -27,6 +27,9 @@ class Opinion
     #[ORM\ManyToOne(inversedBy: 'opinion')]
     private ?User $user = null;
 
+    #[ORM\ManyToOne(inversedBy: 'opinions')]
+    private ?Product $product = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -64,6 +67,18 @@ class Opinion
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
+
+    public function setProduct(?Product $product): static
+    {
+        $this->product = $product;
 
         return $this;
     }
