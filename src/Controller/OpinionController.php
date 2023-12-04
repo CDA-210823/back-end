@@ -2,7 +2,8 @@
 	namespace App\Controller;
 	use App\Entity\Opinion;
 	use App\Repository\OpinionRepository;
-	use App\Service\ValidatorErrorService;
+    use App\Repository\ProductRepository;
+    use App\Service\ValidatorErrorService;
 	use Doctrine\ORM\EntityManagerInterface;
 	use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 	use Symfony\Component\HttpFoundation\JsonResponse;
@@ -11,6 +12,7 @@
 	use Symfony\Component\Routing\Annotation\Route;
 	use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 	use Symfony\Component\Serializer\SerializerInterface;
+
 	#[Route('/api/opinion', name: 'api_address')]
 	class OpinionController extends AbstractController
 	{
@@ -31,18 +33,26 @@
 			$jsonOpinions = $this->serializer->serialize($opinions, 'json', ['groups' => 'opinion:list']);
 			return new JsonResponse($jsonOpinions, Response::HTTP_OK, [], true);
 		}
-		#[Route('/new', name: 'app_opinion_new', methods: ['POST'])]
-		public function new(Request $request): JsonResponse
+		#[Route('/new/{id}', name: 'app_opinion_new', methods: ['POST'])]
+		public function new(Request $request, int $id, ProductRepository $productRepository): JsonResponse
 		{
-			$opinion = $this->serializer->deserialize($request->getContent(), Opinion::class, 'json');
-			$errors = $this->validatorService->getErrors($opinion);
-			if (count($errors) > 0) {
-				return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
-			}
-			$this->em->persist($opinion);
-			$this->em->flush();
-			$jsonOpinion = $this->serializer->serialize($opinion, 'json', ['groups' => 'opinion:list']);
-			return new JsonResponse($jsonOpinion, Response::HTTP_CREATED, [], true);
+            $product = $productRepository->find($id);
+            if ($product) {
+                $opinion = $this->serializer->deserialize($request->getContent(), Opinion::class, 'json');
+                $opinion->setProduct($product);
+                $errors = $this->validatorService->getErrors($opinion);
+                if (count($errors) > 0) {
+                    return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
+                }
+                $this->em->persist($opinion);
+                $this->em->flush();
+                $jsonOpinion = $this->serializer->serialize($opinion, 'json', ['groups' => 'opinion:list']);
+                return new JsonResponse($jsonOpinion, Response::HTTP_CREATED, [], true);
+            }
+            return new JsonResponse([
+                'message' =>"Erreur lors de l'ajout"
+            ]);
+
 		}
 		#[Route('/edit/{id}', name: 'app_opinion_edit', methods: ['PUT'])]
 		public function edit(Request $request, Opinion $opinion = null): JsonResponse
