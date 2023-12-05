@@ -6,6 +6,9 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\ValidatorErrorService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +18,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/user')]
 class UserController extends AbstractController
@@ -46,6 +48,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
+    #[IsGranted("ROLE_ADMIN", message: "Vous n'avez pas les droits requis")]
     public function show(int $id): JsonResponse
     {
         $user = $this->userRepository->find($id);
@@ -90,15 +93,35 @@ class UserController extends AbstractController
             true);
     }
 
+    /**
+     * @throws JWTDecodeFailureException
+     */
     #[Route('/{id}', name: 'app_user_edit', methods: ['PUT'])]
+    #[IsGranted("ROLE_USER", message: "Vous n'avez pas les droits requis")]
     public function editUser
     (Request $request,
      User    $currentUser,
      UserPasswordHasherInterface $passwordHasher,
      ValidatorErrorService $errorService,
-
+//     JWTEncoderInterface $JWTEncoder,
     ): JsonResponse
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $id = $request->attributes->get('id');
+            if ($this->getUser()->getId() != $id) {
+                return new JsonResponse(['message' => 'non autorisé'], Response::HTTP_UNAUTHORIZED);
+            }
+        }
+
+        $token = $request->headers->get('AUTHORIZATION');
+//        $token2 = str_replace('Bearer ', '', $token);
+
+//        try {
+//            $token = $JWTEncoder->decode($token2);
+//        } catch (Exception $e) {
+//            throw new JWTDecodeFailureException(JWTDecodeFailureException::INVALID_TOKEN, 'Invalid JWT Token', $e);
+//        }
+
         $editUser = $this->serializer->deserialize
         (
             $request->getContent(),
@@ -120,8 +143,15 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_user_delete', methods: ['DELETE'])]
+    #[IsGranted("ROLE_USER", message: "Vous n'avez pas les droits requis")]
     public function deleteUser(int $id): JsonResponse
     {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            if ($this->getUser()->getId() != $id) {
+               return new JsonResponse(['message' => 'non autorisé'], Response::HTTP_UNAUTHORIZED);
+            }
+        }
+
         $user = $this->userRepository->find($id);
         if ($user) {
             $this->em->remove($user);
@@ -131,7 +161,8 @@ class UserController extends AbstractController
         }
         return new JsonResponse(['message' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
     }
-	#[Route('/searcbyemail', name: 'app_user_email', methods: ['POST'])]
+
+	#[Route('/searchbyemail', name: 'app_user_email', methods: ['POST'])]
 	public function searchByEmail(Request $request) : JsonResponse
 	{
 		$content = $request->toArray();
@@ -140,9 +171,4 @@ class UserController extends AbstractController
 		$jsonUser = $this->serializer->serialize($user, 'json', ['groups' => 'getUser']);
 		return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
 	}
-    public function errorCreateUser ():JsonResponse
-    {
-
-        return new JsonResponse();
-    }
 }

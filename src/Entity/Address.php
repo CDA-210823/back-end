@@ -34,9 +34,11 @@ class Address
     private ?string $city = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'address')]
+	#[Groups(['address:list'])]
     private Collection $users;
 
     #[ORM\Column(length: 50, nullable: true)]
+	#[Groups(['address:list', 'getUser'])]
     private ?string $recipientName = null;
 
     public function __construct()

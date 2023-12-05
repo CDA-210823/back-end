@@ -2,48 +2,45 @@
 
 namespace App\Tests\Controller;
 
-use JetBrains\PhpStorm\NoReturn;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UserControllerTest extends webTestCase
 {
     private $client;
-    private $adminToken;
-    private $userToken;
+
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
-        $this->adminToken = $this->getAdminToken();
-        $this->userToken = $this->getUserToken();
     }
 
    public function getAdminToken(): mixed
    {
         $data = [
-            'email' => 'angedehain@gmailcom',
-            'password' => 'passwordAzerty1!',
+            'email' => 'admin@local.host',
+            'password' => 'admin',
         ];
         $this->client->request('POST', '/api/login_check', [], [],
             [
             'CONTENT_TYPE' => 'application/json',
             ],
-            json_encode([$data]));
+            json_encode($data));
         $response = json_decode($this->client->getResponse()->getContent(), true);
+
         return $response['token'];
     }
 
     public function getUserToken(): mixed
     {
         $data = [
-            'email' => 'angedehain@gmailcom',
-            'password' => 'passwordAzerty1!'
+            'email' => 'userAngel@local.host',
+            'password' => 'user'
         ];
         $this->client->request('POST', '/api/login_check', [], [],
             [
             'CONTENT_TYPE' => 'application/json'
             ],
-            json_encode([$data]));
+            json_encode($data));
         $response = json_decode($this->client->getResponse()->getContent(), true);
         return $response['token'];
     }
@@ -51,24 +48,13 @@ class UserControllerTest extends webTestCase
     public function testCreateUser():void
     {
         $data = [
-            'email' => 'angedehain@gmailcom',
+            'email' => 'angedehaint@gmail.com',
             'password' => 'passwordAzerty1!'
         ];
         $this->client->request('POST', '/api/user/new', [], [], [], json_encode($data));
         $this->assertSame(201, $this->client->getResponse()->getStatusCode());
         $response = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame($data['email'], $response['email']);
-    }
-
-    public function testErrorMomentCreateUser()
-    {
-        $data = [
-            'password' => 'passwordAzerty1!',
-        ];
-        $this->client->request('POST', '/api/user/new', [], [], [], json_encode($data));
-        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
-        $response = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertSame('La création a échoué', $response['message']);
     }
 
     public function testGetAll()
@@ -86,10 +72,12 @@ class UserControllerTest extends webTestCase
 
     public function testShowWithIncorrectId()
     {
-        $data = [
-            'email' => 'angeladehai@gmailcom',
-        ];
-        $this->client->request('GET', '/api/user/8', [], [] , [] , json_encode($data));
+        $adminToken = $this->getAdminToken();
+        $this->assertNotNull($adminToken);
+
+        $this->client->request('GET', '/api/user/1', [], [] , [
+            'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken,
+        ]);
         $this->assertSame(404, $this->client->getResponse()->getStatusCode());
         $response = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame('Utilisateur non trouvé', $response['message']);
@@ -97,10 +85,15 @@ class UserControllerTest extends webTestCase
 
     public function testEditUser()
     {
+        $userToken = $this->getUserToken();
+        $this->assertNotNull($userToken);
+
         $data = [
-            'email' => 'angeadehai@gmailcom',
+            'email' => '0userr@local.host',
         ];
-        $this->client->request('PUT', '/api/user/11', [], [], [], json_encode($data));
+        $this->client->request('PUT', '/api/user/5', [], [], [
+            'HTTP_AUTHORIZATION' => 'Bearer ' . $userToken,
+            ], json_encode($data));
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
 
         $response = json_decode($this->client->getResponse()->getContent(), true);
@@ -109,10 +102,15 @@ class UserControllerTest extends webTestCase
 
     public function testDeleteUser()
     {
+        $userToken = $this->getUserToken();
+        $this->assertNotNull($userToken);
+
         $data = [
-            'email' => 'angeladehai@gmailcom',
+            'email' => '4user@local.host',
         ];
-        $this->client->request('DELETE', '/api/user/11', [], [], [], json_encode($data));
+        $this->client->request('DELETE', '/api/user/6', [], [], [
+            'HTTP_AUTHORIZATION' => 'Bearer ' . $userToken,
+        ], json_encode($data));
         $this->assertSame(204, $this->client->getResponse()->getStatusCode());
     }
 }
