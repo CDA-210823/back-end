@@ -69,6 +69,7 @@ class Product
     private Collection $cartProducts;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Opinion::class)]
+    #[Groups(['product'])]
     private Collection $opinions;
 
 

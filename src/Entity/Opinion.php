@@ -13,15 +13,15 @@ class Opinion
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-	#[Groups(['opinion:list'])]
+	#[Groups(['opinion:list', 'product'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['opinion:list'])]
+    #[Groups(['opinion:list', 'product'])]
     private ?string $opinion = null;
 
     #[ORM\Column]
-    #[Groups(['opinion:list'])]
+    #[Groups(['opinion:list', 'product'])]
     private ?int $note = null;
 
     #[ORM\ManyToOne(inversedBy: 'opinion')]
