@@ -89,8 +89,9 @@ class ProductController extends AbstractController
             ->setDateAdd(new DateTime())
         ;
 
+        $files = $request->files->all();
         $image = new Image();
-        if ($imageService->uploadImage($request->files->get('image'), $slugger, $image, $container)){
+        if ($imageService->uploadImage($files['image'], $slugger, $image, $container)){
             $product->addImageProduct($image);
         }
 

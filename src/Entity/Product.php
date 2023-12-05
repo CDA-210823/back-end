@@ -50,6 +50,8 @@ class Product
     private ?int $stock = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['product', 'image', 'cart'])]
+    #[Assert\NotBlank(message: "La date ne peut pas être vide")]
     private ?DateTimeInterface $dateAdd = null;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CommandProduct::class)]
@@ -66,6 +68,9 @@ class Product
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: CartProduct::class)]
     private Collection $cartProducts;
 
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Opinion::class)]
+    private Collection $opinions;
+
 
 
     public function __construct()
@@ -74,6 +79,7 @@ class Product
         $this->commandProducts = new ArrayCollection();
         $this->imageProduct = new ArrayCollection();
         $this->cartProducts = new ArrayCollection();
+        $this->opinions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -237,6 +243,36 @@ class Product
             // set the owning side to null (unless already changed)
             if ($cartProduct->getProduct() === $this) {
                 $cartProduct->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Opinion>
+     */
+    public function getOpinions(): Collection
+    {
+        return $this->opinions;
+    }
+
+    public function addOpinion(Opinion $opinion): static
+    {
+        if (!$this->opinions->contains($opinion)) {
+            $this->opinions->add($opinion);
+            $opinion->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOpinion(Opinion $opinion): static
+    {
+        if ($this->opinions->removeElement($opinion)) {
+            // set the owning side to null (unless already changed)
+            if ($opinion->getProduct() === $this) {
+                $opinion->setProduct(null);
             }
         }
 

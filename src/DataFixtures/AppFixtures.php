@@ -20,8 +20,18 @@ class AppFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $user = new User();
-        $user->setEmail('user@local.host');
+        $user->setEmail( 'userAngel@local.host');
         $user->setPassword($this->passwordHasher->hashPassword($user,"user"));
+
+        $manager->persist($user);
+
+        for ($i=0; $i < 5; $i++ ) {
+            $user = new User();
+            $user->setEmail($i . 'user@local.host');
+            $user->setPassword($this->passwordHasher->hashPassword($user,"user"));
+
+            $manager->persist($user);
+        }
 
         $admin = new User();
         $admin->setEmail('admin@local.host');
@@ -29,8 +39,6 @@ class AppFixtures extends Fixture
         $admin->setRoles(["ROLE_ADMIN"]);
 
 
-
-        $manager->persist($user);
         $manager->persist($admin);
 
         $manager->flush();
