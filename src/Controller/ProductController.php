@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Category;
 use App\Entity\Image;
 use App\Entity\Product;
 use App\Repository\CategoryRepository;
@@ -153,6 +154,22 @@ class ProductController extends AbstractController
         }
         return new JsonResponse
         (['message' => "Le produit n'a pas été trouvé"], Response::HTTP_BAD_REQUEST);
+    }
+
+    #[Route('/searchCategory/{categoryId}', name: 'app_product_search_category', methods: ['GET'])]
+    public function searchCategory(int $categoryId, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $category = $entityManager->getRepository(Category::class)->find($categoryId);
+
+        if (!$category) {
+            return new JsonResponse(['message' => 'La catégorie n\'a pas été trouvée.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $products = $entityManager->getRepository(Product::class)->findBy(['category' => $category]);
+
+        return new JsonResponse(
+            $this->serializer->serialize($products, 'json', ['groups' => 'product']),
+            Response::HTTP_OK, [], true);
     }
 
 }
