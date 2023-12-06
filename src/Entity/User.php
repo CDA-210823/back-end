@@ -31,7 +31,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     #[Assert\Email(message: "L'email n'est pas valide")]
     #[Assert\Regex(
-
         "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/",
         message: "Votre email doit contenir un @ et doit finir par minimum 2 caractères"
     )]
@@ -51,21 +50,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]
+	#[Groups(['getUser'])]
     private ?bool $bannite = null;
 
     #[ORM\ManyToMany(targetEntity: Address::class, inversedBy: 'users')]
+	#[Groups(['getUser'])]
     private Collection $address;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Command::class)]
+	#[Groups(['getUser'])]
     private Collection $command;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Opinion::class)]
+	#[Groups(['getUser'])]
     private Collection $opinion;
 
     #[ORM\Column(length: 50, nullable: true)]
+	#[Groups(['getUser'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+	#[Groups(['getUser'])]
     private ?string $firstName = null;
 
     public function __construct()

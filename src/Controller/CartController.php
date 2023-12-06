@@ -68,14 +68,22 @@ class CartController extends AbstractController
 
     #[Route('/addProduct', name: 'app_cart_add_product_to_cart', methods: ['POST'])]
     public function addProductToCart
-    (Request $request, ProductRepository $productRepository, EntityManagerInterface $em): JsonResponse
+    (Request $request, ProductRepository $productRepository, EntityManagerInterface $em, CartProductRepository $cartProductRepository): JsonResponse
     {
 
         $content = $request->toArray();
         $product = $productRepository->find($content['idProduct']);
         $cart = $this->cartRepository->find($content['idCart']);
-        if ($cart && $cart->getUser() === $this->getUser() && $product){
 
+        if ($cart && $cart->getUser() === $this->getUser() && $product){
+        if ($cartProductRepository->findOneBy(['product' => $product])){
+            $productInsideCart = $cartProductRepository->findOneBy(['product' => $product]);
+            $productInsideCart->setQuantity($productInsideCart->getQuantity() + $content['quantity']);
+            $em->persist($productInsideCart);
+            $em->flush();
+
+            return new JsonResponse(['message' => 'Le produit à été ajouter au panier'], Response::HTTP_OK);
+        }
             $cartProduct = new CartProduct();
             $cartProduct->setProduct($product);
             $cartProduct->setCart($cart);
