@@ -74,16 +74,21 @@ class CartController extends AbstractController
         $content = $request->toArray();
         $product = $productRepository->find($content['idProduct']);
         $cart = $this->cartRepository->find($content['idCart']);
+        if ($product->getStock() < $content['quantity']){
+            return new JsonResponse(['message' => 'Rupture de stock'], Response::HTTP_NO_CONTENT);
+        }
 
         if ($cart && $cart->getUser() === $this->getUser() && $product){
-        if ($cartProductRepository->findOneBy(['product' => $product])){
-            $productInsideCart = $cartProductRepository->findOneBy(['product' => $product]);
-            $productInsideCart->setQuantity($productInsideCart->getQuantity() + $content['quantity']);
-            $em->persist($productInsideCart);
-            $em->flush();
+            if ($cartProductRepository->findOneBy(['product' => $product])){
+                $productInsideCart = $cartProductRepository->findOneBy(['product' => $product]);
+                $product->setStock($product->getStock() - $content['quantity']);
+                $productInsideCart->setQuantity($productInsideCart->getQuantity() + $content['quantity']);
+                $em->persist($product);
+                $em->persist($productInsideCart);
+                $em->flush();
 
-            return new JsonResponse(['message' => 'Le produit à été ajouter au panier'], Response::HTTP_OK);
-        }
+                return new JsonResponse(['message' => 'Le produit à été ajouter au panier'], Response::HTTP_OK);
+            }
             $cartProduct = new CartProduct();
             $cartProduct->setProduct($product);
             $cartProduct->setCart($cart);
